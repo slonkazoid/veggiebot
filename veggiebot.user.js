@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      2.13
+// @version      2.14
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
-// @updateURL    https://gist.githubusercontent.com/comradeteammate/cfed14bcab6e646a78bade55c49b34a5/raw/vegiebot.user.js
-// @downloadURL  https://gist.githubusercontent.com/comradeteammate/cfed14bcab6e646a78bade55c49b34a5/raw/vegiebot.user.js
+// @updateURL    https://raw.githubusercontent.com/kevin8181/veggiebot/main/veggiebot.user.js
+// @downloadURL  https://raw.githubusercontent.com/kevin8181/veggiebot/main/veggiebot.user.js
 // @grant        none
 // ==/UserScript==
 
