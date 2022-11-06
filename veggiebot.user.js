@@ -18,7 +18,7 @@
 
 //check or generate bot ID
 const botID = getCookie("z") ? getCookie("z") : randomInteger(1000, 9999); //if cookie exists, get botID from there. otherwise create new ID.
-setCookie("z", botID, 1); //save botID to cookie
+setCookie("z", botID, 1); //save bot ID to cookie
 
 //load library for png manipulation
 const pngLib = document.createElement("script");
@@ -30,7 +30,25 @@ document.body.appendChild(pngLib);
 const infoPanel = document.createElement("div");
 infoPanel.classList.add("infoPanel");
 infoPanel.style.display = "none";
-infoPanel.innerHTML = '<div style="position: absolute;z-index: 999;width: 100vw;height: 100vh;background-color: #000a;display: flex;justify-content: center;align-items: center;"><div style="background-color: white;padding: 20px;border-radius: 10px;"><strong>Debug Info</strong><br>Version: <span class="version">a</span><br>Bot ID: <span class="botID">123</span><br><button class="closeInfoButton" style="background-color: cornflowerblue;padding: 10px;border-radius: 6px;margin-top: 15px;">Close</button></div></div>';
+infoPanel.innerHTML = `
+  <div style="position: absolute;z-index: 999;width: 100vw;height: 100vh;background-color: #000a;display: flex;justify-content: center;align-items: center;">
+    <div style="background-color: white;padding: 20px;border-radius: 10px;">
+      <strong>Debug Info</strong>
+      <br>
+      Version: <span class="version">a</span>
+      <br>
+      Bot ID: <span class="botID">123</span>
+      <br>
+      <br>
+      <strong>Active Designs</strong>
+      <br>
+      <table>
+        <tbody class="designsTable">
+        </tbody>
+      </table>
+      <button class="closeInfoButton" style="background-color: cornflowerblue;padding: 10px;border-radius: 6px;margin-top: 15px;">Close</button>
+    </div>
+  </div>`;
 document.body.appendChild(infoPanel);
 
 //close button function
@@ -91,14 +109,16 @@ window.onload = async function() {
 
   const rawDesignArray = [
     /*{
-      url: "https://i.imgur.com/lmvqe6j.png", // new small location
+      url: "https://i.imgur.com/lmvqe6j.png",
       xCoord: 197,
       yCoord: 10001,
+      name: "New small banner",
     },*/
     {
-      url: "https://i.imgur.com/c9F2Ptz.png", // watch dominion
+      url: "https://i.imgur.com/c9F2Ptz.png",
       xCoord: -141,
       yCoord: 9957,
+      name: "Watch Dominon text",
     },
       // https://i.imgur.com/lmvqe6j.png
     /*{
@@ -112,21 +132,28 @@ window.onload = async function() {
       yCoord: 9957,
     },*/
     {
-      url: "https://www.thechristmasstation.org/veggiebot/design.png", // full design
+      url: "https://www.thechristmasstation.org/veggiebot/design.png",
       xCoord: -148,
       yCoord: 9950,
+      name: "Main Banner Full Design",
     },
     {
       url: "https://www.thechristmasstation.org/veggiebot/train1.png",
       xCoord: 27,
       yCoord: 10053,
+      name: "Train",
     }
   ];
 
+  const designsTable = document.querySelector(".designsTable");
   for (const design of rawDesignArray) { //for each design
     design.pixels = await designPixelArray(design);
     console.log(design);
     designArray.push(design); //add design to processed designs array
+
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${design.name}</td>`;
+    designsTable.appendChild(row);
   }
   console.log(designArray);
 
