@@ -115,7 +115,7 @@ window.onload = async function() {
       name: "New small banner",
     },*/
     {
-      url: "https://i.imgur.com/c9F2Ptz.png",
+      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/watchDominion.png",
       xCoord: -141,
       yCoord: 9957,
       name: "Watch Dominon text",
@@ -132,13 +132,13 @@ window.onload = async function() {
       yCoord: 9957,
     },*/
     {
-      url: "https://www.thechristmasstation.org/veggiebot/design.png",
+      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/mainBanner.png",
       xCoord: -148,
       yCoord: 9950,
       name: "Main Banner Full Design",
     },
     {
-      url: "https://www.thechristmasstation.org/veggiebot/train1.png",
+      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/train.png",
       xCoord: 27,
       yCoord: 10053,
       name: "Train",
