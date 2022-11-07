@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      2.14
+// @version      2.15
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -148,14 +148,13 @@ window.onload = async function() {
   const designsTable = document.querySelector(".designsTable");
   for (const design of rawDesignArray) { //for each design
     design.pixels = await designPixelArray(design);
-    console.log(design);
     designArray.push(design); //add design to processed designs array
 
+    //create row in designs table on info panel
     const row = document.createElement("tr");
-    row.innerHTML = `<td>${design.name}</td>`;
+    row.innerHTML = `<td><a href="${design.url}" target="_blank" style="color: blue; text-decoration: underline;">${design.name}</a></td>`;
     designsTable.appendChild(row);
   }
-  console.log(designArray);
 
   //hide loading indicator and display UI
   loadingIndicator.style.display = "none";
@@ -165,12 +164,9 @@ window.onload = async function() {
   webhook(`Connected.`); //send connection message to webhook
   pixelTimer(); //start pixel placement loop
 
-
-
 };
 
 async function designPixelArray(design) { //adds pixel array to design object
-    console.log("GETTING PIXELS FOR "+design.url);
   design.data = await pngtoy.fetch(design.url).then(() => pngtoy.decode()).then(bmp => bmp); //png data
   const pixels = [];
   for (var x = 0; x < design.data.width; x++) { //for each pixel column of the design
@@ -287,8 +283,8 @@ function getPixelColor(design, x, y) { //returns color code for given pixel in a
           }
       }
       if (pixelColor === null) {
-          console.log(`${rawColors[offset + 0]}, ${rawColors[offset + 1]}, ${rawColors[offset + 2]}`);
-          console.log(`No color found at coordinates ${x}, ${y}.`);
+          console.error(`${rawColors[offset + 0]}, ${rawColors[offset + 1]}, ${rawColors[offset + 2]}`);
+          console.error(`No color found at coordinates ${x}, ${y}.`);
       }
   }
   return pixelColor;
@@ -360,11 +356,8 @@ function choosePixel() { //selects the pixel to write
 }
 
 async function placePixel(pixel) { //attempts to place a pixel. returns true if the pixel is already there.
-  console.log("Building pixel:" + JSON.stringify(pixel));
-
   const state = window.store.getState();
   if (window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color)) { //if pixel is already there
-    // console.log("isSameColorIn = true");
     return true;
   }
 
@@ -397,8 +390,6 @@ async function placePixel(pixel) { //attempts to place a pixel. returns true if 
   .then(result => {
     if (JSON.parse(result).result?.data.success) { //if server says the pixel was placed
 
-      console.log("Success");
-
       //update pixels placed counter in ui
       let newCount;
       if (getCookie("pixelCounter")) {
@@ -415,10 +406,10 @@ async function placePixel(pixel) { //attempts to place a pixel. returns true if 
       webhook("Pixel placed.");
     }
     else { //server returned 200 but gives an error message
-      console.log(result);
+      console.error(result);
     }
   })
-  .catch(error => console.log('error', error)); //network error
+  .catch(error => console.error('error', error)); //network error
 }
 
 function webhook(content) { //sends log/error message to discord webhook
