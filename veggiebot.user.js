@@ -26,44 +26,9 @@ pngLib.src = "https://www.thechristmasstation.org/veggiebot/pngtoy.min.js";
 pngLib.type = "application/javascript";
 document.body.appendChild(pngLib);
 
-//info panel popup
-const infoPanel = document.createElement("div");
-infoPanel.classList.add("infoPanel");
-infoPanel.style.display = "none";
-infoPanel.innerHTML = `
-  <div style="position: absolute;z-index: 999;width: 100vw;height: 100vh;background-color: #000a;display: flex;justify-content: center;align-items: center;">
-    <div style="background-color: white;padding: 20px;border-radius: 10px;">
-      <strong>Debug Info</strong>
-      <br>
-      Version: <span class="version">a</span>
-      <br>
-      Bot ID: <span class="botID">123</span>
-      <br>
-      <br>
-      <table>
-        <tbody class="designsTable">
-          <tr style="text-align: left;">
-            <th>Design</th>
-            <th>Location</th>
-            <th>Size</th>
-          </tr>
-        </tbody>
-      </table>
-      <button class="closeInfoButton" style="background-color: cornflowerblue;padding: 10px;border-radius: 6px;margin-top: 15px;">Close</button>
-    </div>
-  </div>`;
-document.body.appendChild(infoPanel);
-
-//close button function
-document.querySelector(".closeInfoButton").onclick = function closeInfo() {document.querySelector(".infoPanel").style.display = "none";};
-
-//load values into info panel
-document.querySelector(".botID").innerHTML = botID;
-document.querySelector(".version").innerHTML = GM_info.script.version;
-
 //create flex container for UI
 const flex = document.createElement("div");
-flex.style = "position: absolute; display: flex; flex-flow: row wrap; gap: 5px; padding: 5px; background-color: black; border-radius: 0 0 13px 0;";
+flex.style = "position: absolute; display: flex; flex-flow: row wrap; gap: 5px; padding: 5px; background-color: black; border-radius: 0 0 13px 0; margin-top: -42px;";
 document.body.appendChild(flex);
 
 //add loading indicator
@@ -98,6 +63,40 @@ infoButton.onclick = function showInfo() {document.querySelector(".infoPanel").s
 infoButton.innerHTML = "?";
 flex.appendChild(infoButton);
 
+//info panel popup
+const infoPanel = document.createElement("div");
+infoPanel.classList.add("infoPanel");
+infoPanel.style = "display:none; margin-top: -42px;";
+infoPanel.innerHTML = `
+  <div style="position: absolute;z-index: 999;width: 100vw;height: 100vh;background-color: #000a;display: flex;justify-content: center;align-items: center;">
+    <div style="background-color: white;padding: 20px;border-radius: 10px;">
+      <strong>Debug Info</strong>
+      <br>
+      Version: <span class="version">a</span>
+      <br>
+      Bot ID: <span class="botID">123</span>
+      <br>
+      <br>
+      <table>
+        <tbody class="designsTable">
+          <tr style="text-align: left;">
+            <th>Design</th>
+            <th>Location</th>
+            <th>Size</th>
+          </tr>
+        </tbody>
+      </table>
+      <button class="closeInfoButton" style="background-color: cornflowerblue;padding: 10px;border-radius: 6px;margin-top: 15px;">Close</button>
+    </div>
+  </div>`;
+document.body.appendChild(infoPanel);
+
+//close button function
+document.querySelector(".closeInfoButton").onclick = function closeInfo() {document.querySelector(".infoPanel").style.display = "none";};
+
+//load values into info panel
+document.querySelector(".botID").innerHTML = botID;
+document.querySelector(".version").innerHTML = GM_info.script.version;
 
 let pngtoy;
 const designArray = []; //array of design objects
