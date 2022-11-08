@@ -146,7 +146,7 @@ window.onload = async function() {
     {
       url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/tunnel.png",
       xCoord: -101,
-      yCoord: 1051,
+      yCoord: 10051,
       name: "Tunnel",
     },
   ];
