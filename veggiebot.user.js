@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      2.16
+// @version      2.17
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -40,10 +40,12 @@ infoPanel.innerHTML = `
       Bot ID: <span class="botID">123</span>
       <br>
       <br>
-      <strong>Active Designs</strong>
-      <br>
       <table>
         <tbody class="designsTable">
+          <tr style="text-align: left;">
+            <th>Design</th>
+            <th>Location</th>
+          </tr>
         </tbody>
       </table>
       <button class="closeInfoButton" style="background-color: cornflowerblue;padding: 10px;border-radius: 6px;margin-top: 15px;">Close</button>
@@ -158,7 +160,8 @@ window.onload = async function() {
 
     //create row in designs table on info panel
     const row = document.createElement("tr");
-    row.innerHTML = `<td><a href="${design.url}" target="_blank" style="color: blue; text-decoration: underline;">${design.name}</a></td>`;
+    row.style = "border-top: 1px solid #ddd;";
+    row.innerHTML = `<td style="padding: 5px"><a href="${design.url}" target="_blank">${design.name}</a></td><td><a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">${design.xCoord}, ${design.yCoord}</a></td>`;
     designsTable.appendChild(row);
   }
 
