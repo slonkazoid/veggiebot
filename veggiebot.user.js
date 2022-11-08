@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      2.19
+// @version      2.21
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -142,7 +142,7 @@ window.onload = async function() {
     {
       url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/train.png",
       xCoord: 27,
-      yCoord: 10053,
+      yCoord: 10050,
       name: "Train",
     },
     {
