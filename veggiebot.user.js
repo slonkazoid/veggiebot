@@ -142,7 +142,13 @@ window.onload = async function() {
       xCoord: 27,
       yCoord: 10053,
       name: "Train",
-    }
+    },
+    {
+      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/tunnel.png",
+      xCoord: -101,
+      yCoord: 1051,
+      name: "Tunnel",
+    },
   ];
 
   const designsTable = document.querySelector(".designsTable");
