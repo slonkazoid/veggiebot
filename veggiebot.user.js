@@ -22,7 +22,7 @@ setCookie("z", botID, 1); //save bot ID to cookie
 
 //load library for png manipulation
 const pngLib = document.createElement("script");
-pngLib.src = "https://www.thechristmasstation.org/veggiebot/pngtoy.min.js";
+pngLib.src = "https://raw.githubusercontent.com/xgds/pngtoy/master/pngtoy.min.js";
 pngLib.type = "application/javascript";
 document.body.appendChild(pngLib);
 
