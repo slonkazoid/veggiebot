@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      2.22
+// @version      2.23
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -22,7 +22,7 @@ setCookie("z", botID, 1); //save bot ID to cookie
 
 //load library for png manipulation
 const pngLib = document.createElement("script");
-pngLib.src = "https://raw.githubusercontent.com/xgds/pngtoy/master/pngtoy.min.js";
+pngLib.src = "https://files.catbox.moe/lvz4q6.js";
 pngLib.type = "application/javascript";
 document.body.appendChild(pngLib);
 
