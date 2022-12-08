@@ -151,6 +151,12 @@ window.onload = async function() {
       yCoord: 10051,
       name: "Tunnel",
     },
+    {
+      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/solid_black_attack_superstraight.png",
+      xCoord: -143,
+      yCoord: 9834,
+      name: "Black out superstraight",
+    },
   ];
 
   const designsTable = document.querySelector(".designsTable");
