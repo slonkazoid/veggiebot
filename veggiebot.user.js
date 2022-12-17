@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.1.0
+// @version      3.2.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -174,15 +174,62 @@ document.querySelector(".closeInfoButton").onclick = function closeInfo() {docum
 //   }
 // });
 
-let pngtoy;
+const rawDesignArray = [
+  /*{
+    url: "https://i.imgur.com/lmvqe6j.png",
+    xCoord: 197,
+    yCoord: 10001,
+    name: "New small banner",
+  },*/
+  {
+    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/watchDominion.png",
+    xCoord: -141,
+    yCoord: 9957,
+    name: "Watch Dominon text",
+  },
+  {
+    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/mainBanner.png",
+    xCoord: -148,
+    yCoord: 9950,
+    name: "Main Banner Full Design",
+  },
+  {
+    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/elwoods.png",
+    xCoord: -68,
+    yCoord: 10068,
+    name: "Elwood's Large",
+  },
+  {
+    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/elwoodsSmall.png",
+    xCoord: -1699,
+    yCoord: 9598,
+    name: "Elwood's Small",
+  },
+  {
+    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/train.png",
+    xCoord: 27,
+    yCoord: 10050,
+    name: "Train",
+  },
+  {
+    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/tunnel.png",
+    xCoord: -148,
+    yCoord: 10051,
+    name: "Tunnel",
+  },
+  {
+    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/solid_black_attack_superstraight.png",
+    xCoord: -143,
+    yCoord: 9834,
+    name: "Black out superstraight",
+  },
+];
 const designArray = []; //array of design objects
 
 setTimeout(refresh, (30 * 60 * 1000)); //refresh page after 30 mins
 
 //when page is done loading, start bot
 window.onload = async function() {
-
-  pngtoy = new PngToy();
 
   // //get designs from api
   // fetch("https://veggiebot.thechristmasstation.org/designs", {credentials: 'include'})
@@ -193,89 +240,162 @@ window.onload = async function() {
   //   });
   // });
 
-
-  const rawDesignArray = [
-    /*{
-      url: "https://i.imgur.com/lmvqe6j.png",
-      xCoord: 197,
-      yCoord: 10001,
-      name: "New small banner",
-    },*/
-    {
-      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/watchDominion.png",
-      xCoord: -141,
-      yCoord: 9957,
-      name: "Watch Dominon text",
-    },
-    {
-      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/mainBanner.png",
-      xCoord: -148,
-      yCoord: 9950,
-      name: "Main Banner Full Design",
-    },
-    {
-      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/elwoods.png",
-      xCoord: -68,
-      yCoord: 10068,
-      name: "Elwood's Large",
-    },
-    {
-      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/elwoodsSmall.png",
-      xCoord: -1699,
-      yCoord: 9598,
-      name: "Elwood's Small",
-    },
-    {
-      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/train.png",
-      xCoord: 27,
-      yCoord: 10050,
-      name: "Train",
-    },
-    {
-      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/tunnel.png",
-      xCoord: -148,
-      yCoord: 10051,
-      name: "Tunnel",
-    },
-    {
-      url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/solid_black_attack_superstraight.png",
-      xCoord: -143,
-      yCoord: 9834,
-      name: "Black out superstraight",
-    },
-  ];
-
-  for (const design of rawDesignArray) { //process each design
-
-    design.data = await pngtoy.fetch(design.url).then(() => pngtoy.decode()).then(bmp => bmp); //extract png data
-
-    design.pixels = [];
-    for (var x = 0; x < design.data.width; x++) { //for each pixel column of the design
-      for(var y = 0; y < design.data.height; y++) { //for each pixel row of the design
-        const color = getPixelColor(design, x, y); //get pixel color
-        const pixel = { //create pixel object
-          x: x + design.xCoord,
-          y: y + design.yCoord,
-          color: color,
-        };
-        design.pixels.push(pixel); //add pixel to array
-      }
-    }
-    designArray.push(design); //add design to processed designs array
+  for (const design of rawDesignArray) {
+    designArray.push(await Design.new(design.url, design.xCoord, design.yCoord, design.name));
   }
-  updateAllIncorrectPixels();
+  console.log(designArray);
   refreshDesignsTable();
+
   //take down splash screen
   splash.classList.add("hidden");
 
-  webhook(`Connected.`); //send connection message to webhook
   pixelTimer(); //start pixel placement loop
 
 };
 
-function getPixelColor(design, x, y) { //returns color code for given pixel in a design, by design-level coordinates
-  const rawColors = design.data.bitmap; //rbg array from canvas
-  const offset = (design.data.width*y+x)*4;
+//pixelvanvas functions
+function refreshDesignsTable() { //clears and reloads the design table in the UI
+  const designsTable = document.querySelector(".designsTable");
+  designsTable.innerHTML = `
+    <tr style="text-align: left;">
+      <th>Design</th>
+      <th>Location</th>
+      <th>Size</th>
+      <th>To Do</th>
+    </tr>
+  `;
+  for (const design of designArray) { //for each design
+    const row = document.createElement("tr");
+    row.style = "border-top: 1px solid rgb(115, 115, 115);";
+    row.innerHTML = `
+      <td style="padding: 5px"><a href="${design.url}" target="_blank">${design.name}</a></td>
+      <td><a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">${design.xCoord}, ${design.yCoord}</a></td>
+      <td>${design.pixels.length}</td>
+      <td>${design.incorrectPixels.length}</td>
+    `;
+    designsTable.appendChild(row);
+  }
+
+  let totalIncorrectPixels = 0;
+  for (const design of designArray) { //for every design
+    totalIncorrectPixels += design.incorrectPixels.length; //add this design's incorrect pixels to total incorrect pixel count
+  }
+  document.querySelector(".todoCounter").innerHTML = "Pixels todo: " + totalIncorrectPixels; //update pixel todo counter
+}
+function choosePixel() { //selects the pixel to write
+  for (const design of designArray) { //for each design
+    if (design.incorrectPixels.length > 0) { //if this design has any incorrect pixels
+      return design.incorrectPixels[randomInteger(1, design.incorrectPixels.length) - 1]; //return random pixel from this design
+    }
+  }
+}
+async function pixelTimer() { //the loop responsible for placing pixels
+  //todo set timeout based on response from pixel api
+
+  refreshDesignsTable();
+  const pixel = choosePixel(); //get a random pixel object to be painted
+
+  if (pixel) { //if a pixel was returned
+    const noDelay = await pixel.place();
+
+    if (noDelay) {
+      console.log("Pixel is already correct, trying another...");
+      setTimeout(pixelTimer, (0.3 * 1000)); //run again after 0.3 seconds
+    }
+    else {
+      const randomDelay = Math.round(Math.random() * 5 * 1000); //random number of milliseconds to delay, up to 5 seconds
+      setTimeout(pixelTimer, (60 * 1000) + randomDelay); //run again after one minute plus random delay
+    }
+  }
+  else { //if no pixel was returned (all designs are complete)
+    setTimeout(pixelTimer, (30 * 1000)); //run again in 30 seconds
+  }
+
+}
+
+//general functions
+function webhook(content) { //sends log/error message to discord webhook
+  // const headers = new Headers();
+  // headers.append("Content-Type", "application/json");
+  // const webhookBody = JSON.stringify({
+  //   "content": `\`${botID}\` \`v${GM_info.script.version}\`: ` + content,
+  // });
+  // const webhookOpts = {
+  //   method: 'POST',
+  //   headers: headers,
+  //   body: webhookBody,
+  // };
+  // fetch("https://veggiebot.thechristmasstation.org/webhook", webhookOpts);
+}
+function randomInteger(min, max) { //returns random int between min and max inclusive
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function getCookie(cname) { //returns value of cookie by name
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+function setCookie(cname, cvalue, exdays) { //sets cookie
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+function refresh() {
+  window.location.reload();
+}
+
+class Design {
+  static async new(url, xCoord, yCoord, name) { //call this function to create a new design
+    //get all async stuff done here before calling the constructor
+    const pngtoy = new PngToy();
+    const data = await pngtoy.fetch(url).then(() => pngtoy.decode()).then(bmp => bmp); //extract png data
+
+    return new Design(url, xCoord, yCoord, name, data); //construct and return
+  }
+  constructor(url, xCoord, yCoord, name, data) {
+    this.url = url;
+    this.xCoord = xCoord;
+    this.yCoord = yCoord;
+    this.name = name;
+    this.width = data.width;
+    this.height = data.height;
+
+    this.pixels = [];
+    for (var x = 0; x < data.width; x++) { //for each pixel column of the design
+      for(var y = 0; y < data.height; y++) { //for each pixel row of the design
+        const color = getDesignPixelColor(data, x, y); //get pixel color
+        const pixel = new Pixel(x + xCoord, y + yCoord, color);
+        this.pixels.push(pixel); //add pixel to array
+      }
+    }
+  }
+
+
+  get incorrectPixels() {
+    const incorrectPixels = [];
+    const state = window.store.getState();
+    for (const pixel of this.pixels) { //for each pixel in design's pixel array
+      if (pixel.color != null && !window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color)) { //if pixel isn't correct
+        incorrectPixels.push(pixel); //add pixel to incorrect pixel array
+      }
+    }
+    return incorrectPixels;
+  }
+}
+function getDesignPixelColor(data, x, y) { //returns color code for given pixel in a design, by design-level coordinates
+  const rawColors = data.bitmap; //rbg array from canvas
+  const offset = (data.width*y+x)*4;
 
   let pixelColor = null;
 
@@ -380,176 +500,65 @@ function getPixelColor(design, x, y) { //returns color code for given pixel in a
   return pixelColor;
 }
 
-
-function getIncorrectPixels(design) { //returns an array of the pixel objects that need to be painted
-  const incorrectPixels = [];
-  const state = window.store.getState();
-  for (const pixel of design.pixels) { //for each pixel in design's pixel array
-    if (pixel.color != null && !window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color)) { //if pixel isn't correct
-      incorrectPixels.push(pixel); //add pixel to incorrect pixel array
+class Pixel {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.wasabi =  x + y + 2342;
+  }
+  async place() { //attempts to place the pixel. returns true if the pixel is already there.
+    const state = window.store.getState();
+    if (window.isSameColorIn(state,[this.x, this.y], this.color)) { //if pixel is already there
+      return true;
     }
-  }
-  return incorrectPixels;
-}
 
-function refreshDesignsTable() {
-  const designsTable = document.querySelector(".designsTable");
-  designsTable.innerHTML = `
-    <tr style="text-align: left;">
-      <th>Design</th>
-      <th>Location</th>
-      <th>Size</th>
-      <th>To Do</th>
-    </tr>
-  `;
-  for (const design of designArray) { //for each design
-    const row = document.createElement("tr");
-    row.style = "border-top: 1px solid rgb(115, 115, 115);";
-    row.innerHTML = `
-      <td style="padding: 5px"><a href="${design.url}" target="_blank">${design.name}</a></td>
-      <td><a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">${design.xCoord}, ${design.yCoord}</a></td>
-      <td>${design.pixels.length}</td>
-      <td>${design.incorrectPixels.length}</td>
-    `;
-    designsTable.appendChild(row);
-  }
-}
+    const fingerprint = await window.getFingerprint();
+    const firebaseToken = (await window.getToken$2(window.appCheck, !1)).token;
 
-function choosePixel() { //selects the pixel to write
-  for (const design of designArray) { //for each design
-    if (design.incorrectPixels.length > 0) { //if this design has any incorrect pixels
-      return design.incorrectPixels[randomInteger(1, design.incorrectPixels.length) - 1]; //return random pixel from this design
-    }
-  }
-}
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
 
-function updateAllIncorrectPixels() {
-  let totalIncorrectPixels = 0;
-  for (const design of designArray) { //for every design
-    const incorrectPixels = getIncorrectPixels(design); //update incorrect pixels
-    design.incorrectPixels = incorrectPixels; //save incorrect pixels to design
-    totalIncorrectPixels += incorrectPixels.length; //add this design's incorrect pixels to total incorrect pixel count
-  }
-  document.querySelector(".todoCounter").innerHTML = "Pixels todo: " + totalIncorrectPixels; //update pixel todo counter
-  refreshDesignsTable();
-}
+    var raw = JSON.stringify({
+      "appCheckToken": firebaseToken,
+      "color": this.color,
+      "fingerprint": fingerprint,
+      "wasabi": this.wasabi,
+      "x": this.x,
+      "y": this.y,
+    });
 
-async function pixelTimer() { //the loop responsible for placing pixels
-  //todo set timeout based on response from pixel api
+    var requestOptions = {
+      method: 'POST',
+      headers: headers,
+      body: raw,
+      redirect: 'follow'
+    };
 
-  updateAllIncorrectPixels();
-  const pixel = choosePixel(); //get a random pixel object to be painted
+    fetch("https://pixelcanvas.io/api/pixel", requestOptions)
+    .then(response => response.text())
+    .then(result => {
+      if (JSON.parse(result).result.data.success) { //if server says the pixel was placed
 
-  if (pixel) { //if a pixel was returned
-    const noDelay = await placePixel(pixel);
+        //update pixels placed counter in ui
+        let newCount;
+        if (getCookie("pixelCounter")) {
+          newCount = parseInt(getCookie("pixelCounter")) + 1; //new count = old count + 1
+        }
+        else {
+          newCount = 1;
+        }
+        setCookie("pixelCounter", newCount, 3); //update cookie
+        const numregex = /[0-9]{1,}/;
+        document.querySelector(".pixelCounter").innerHTML = document.querySelector(".pixelCounter").innerHTML.replace(numregex, newCount); //change count in ui
 
-    if (noDelay) {
-      console.log("Pixel is already correct, trying another...");
-      setTimeout(pixelTimer, (0.3 * 1000)); //run again after 0.3 seconds
-    }
-    else {
-      const randomDelay = Math.round(Math.random() * 5 * 1000); //random number of milliseconds to delay, up to 5 seconds
-      setTimeout(pixelTimer, (60 * 1000) + randomDelay); //run again after one minute plus random delay
-    }
-  }
-  else { //if no pixel was returned (all designs are complete)
-    setTimeout(pixelTimer, (30 * 1000)); //run again in 30 seconds
-  }
-
-}
-async function placePixel(pixel) { //attempts to place a pixel. returns true if the pixel is already there.
-  const state = window.store.getState();
-  if (window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color)) { //if pixel is already there
-    return true;
-  }
-
-  const fingerprint = await window.getFingerprint();
-  const firebaseToken = (await window.getToken$2(window.appCheck, !1)).token;
-
-  const wasabi = pixel.x + pixel.y + 2342;
-
-  const headers = new Headers();
-  headers.append("Content-Type", "application/json");
-
-  var raw = JSON.stringify({
-    "appCheckToken": firebaseToken,
-    "color": pixel.color,
-    "fingerprint": fingerprint,
-    "wasabi": wasabi,
-    "x": pixel.x,
-    "y": pixel.y,
-  });
-
-  var requestOptions = {
-    method: 'POST',
-    headers: headers,
-    body: raw,
-    redirect: 'follow'
-  };
-
-  fetch("https://pixelcanvas.io/api/pixel", requestOptions)
-  .then(response => response.text())
-  .then(result => {
-    if (JSON.parse(result).result.data.success) { //if server says the pixel was placed
-
-      //update pixels placed counter in ui
-      let newCount;
-      if (getCookie("pixelCounter")) {
-        newCount = parseInt(getCookie("pixelCounter")) + 1; //new count = old count + 1
+        //send message to webhook
+        webhook("Pixel placed.");
       }
-      else {
-        newCount = 1;
+      else { //server returned 200 but gives an error message
+        console.error(result);
       }
-      setCookie("pixelCounter", newCount, 3); //update cookie
-      const numregex = /[0-9]{1,}/;
-      document.querySelector(".pixelCounter").innerHTML = document.querySelector(".pixelCounter").innerHTML.replace(numregex, newCount); //change count in ui
-
-      //send message to webhook
-      webhook("Pixel placed.");
-    }
-    else { //server returned 200 but gives an error message
-      console.error(result);
-    }
-  })
-  .catch(error => console.error('error', error)); //network error
-}
-function webhook(content) { //sends log/error message to discord webhook
-  // const headers = new Headers();
-  // headers.append("Content-Type", "application/json");
-  // const webhookBody = JSON.stringify({
-  //   "content": `\`${botID}\` \`v${GM_info.script.version}\`: ` + content,
-  // });
-  // const webhookOpts = {
-  //   method: 'POST',
-  //   headers: headers,
-  //   body: webhookBody,
-  // };
-  // fetch("https://veggiebot.thechristmasstation.org/webhook", webhookOpts);
-}
-function randomInteger(min, max) { //returns random int between min and max inclusive
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-function getCookie(cname) { //returns value of cookie by name
-  let name = cname + "=";
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
+    })
+    .catch(error => console.error('error', error)); //network error
   }
-  return "";
-}
-function setCookie(cname, cvalue, exdays) { //sets cookie
-  const d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  let expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
-function refresh() {
-  window.location.reload();
 }
