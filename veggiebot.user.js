@@ -569,8 +569,9 @@ class Pixel {
 
         Toastify({
           text: `Placed a ${this.color.name} pixel in ${this.design.name} (${this.x}, ${this.y})`,
+          destination: `https://pixelcanvas.io/@${this.x},${this.y}`,
           duration: 10000,
-          close: true,
+          close: false,
           gravity: "bottom", // `top` or `bottom`
           position: "center", // `left`, `center` or `right`
           stopOnFocus: true, // Prevents dismissing of toast on hover
