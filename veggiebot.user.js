@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.0.0
+// @version      3.0.1
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -212,11 +212,6 @@ window.onload = async function() {
       yCoord: 9957,
       name: "Watch Dominon text",
     },
-    // {
-    //   url: "https://i.imgur.com/vaquknj.png", // www.watchdominion.org
-    //   xCoord: -141,
-    //   yCoord: 9957,
-    // },
     {
       url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/mainBanner.png",
       xCoord: -148,
