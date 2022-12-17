@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.0.1
+// @version      3.1.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -145,11 +145,6 @@ div.innerHTML = `
       </div>
       <table>
         <tbody class="designsTable">
-          <tr style="text-align: left;">
-            <th>Design</th>
-            <th>Location</th>
-            <th>Size</th>
-          </tr>
         </tbody>
       </table>
       <button class="closeInfoButton"><strong>Close</strong></button>
@@ -267,19 +262,9 @@ window.onload = async function() {
       }
     }
     designArray.push(design); //add design to processed designs array
-
-    //create row in designs table on info panel
-    const designsTable = document.querySelector(".designsTable");
-    const row = document.createElement("tr");
-    row.style = "border-top: 1px solid rgb(115, 115, 115);";
-    row.innerHTML = `
-      <td style="padding: 5px"><a href="${design.url}" target="_blank">${design.name}</a></td>
-      <td><a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">${design.xCoord}, ${design.yCoord}</a></td>
-      <td>${design.pixels.length}</td>
-    `;
-    designsTable.appendChild(row);
   }
-
+  updateAllIncorrectPixels();
+  refreshDesignsTable();
   //take down splash screen
   splash.classList.add("hidden");
 
@@ -394,25 +379,65 @@ function getPixelColor(design, x, y) { //returns color code for given pixel in a
   }
   return pixelColor;
 }
-function getIncorrectPixels (specificDesigns = null) { //returns an array of the pixel objects that need to be painted
+
+
+function getIncorrectPixels(design) { //returns an array of the pixel objects that need to be painted
   const incorrectPixels = [];
   const state = window.store.getState();
-  var designsToCheck = specificDesigns == null ? designArray : specificDesigns;
-  for (const design of designsToCheck) { //for each design
-    for (const pixel of design.pixels) { //for each pixel in design's pixel array
-      if (pixel.color != null && !window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color)) { //if pixel isn't correct
-        incorrectPixels.push(pixel); //add pixel to incorrect pixel array
-      }
+  for (const pixel of design.pixels) { //for each pixel in design's pixel array
+    if (pixel.color != null && !window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color)) { //if pixel isn't correct
+      incorrectPixels.push(pixel); //add pixel to incorrect pixel array
     }
-    if(incorrectPixels.length > 0) break; // prioritise designs in array order
   }
-
-  document.querySelector(".todoCounter").innerHTML = "Pixels todo: " + incorrectPixels.length; //update pixel todo counter
   return incorrectPixels;
 }
+
+function refreshDesignsTable() {
+  const designsTable = document.querySelector(".designsTable");
+  designsTable.innerHTML = `
+    <tr style="text-align: left;">
+      <th>Design</th>
+      <th>Location</th>
+      <th>Size</th>
+      <th>To Do</th>
+    </tr>
+  `;
+  for (const design of designArray) { //for each design
+    const row = document.createElement("tr");
+    row.style = "border-top: 1px solid rgb(115, 115, 115);";
+    row.innerHTML = `
+      <td style="padding: 5px"><a href="${design.url}" target="_blank">${design.name}</a></td>
+      <td><a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">${design.xCoord}, ${design.yCoord}</a></td>
+      <td>${design.pixels.length}</td>
+      <td>${design.incorrectPixels.length}</td>
+    `;
+    designsTable.appendChild(row);
+  }
+}
+
+function choosePixel() { //selects the pixel to write
+  for (const design of designArray) { //for each design
+    if (design.incorrectPixels.length > 0) { //if this design has any incorrect pixels
+      return design.incorrectPixels[randomInteger(1, design.incorrectPixels.length) - 1]; //return random pixel from this design
+    }
+  }
+}
+
+function updateAllIncorrectPixels() {
+  let totalIncorrectPixels = 0;
+  for (const design of designArray) { //for every design
+    const incorrectPixels = getIncorrectPixels(design); //update incorrect pixels
+    design.incorrectPixels = incorrectPixels; //save incorrect pixels to design
+    totalIncorrectPixels += incorrectPixels.length; //add this design's incorrect pixels to total incorrect pixel count
+  }
+  document.querySelector(".todoCounter").innerHTML = "Pixels todo: " + totalIncorrectPixels; //update pixel todo counter
+  refreshDesignsTable();
+}
+
 async function pixelTimer() { //the loop responsible for placing pixels
   //todo set timeout based on response from pixel api
 
+  updateAllIncorrectPixels();
   const pixel = choosePixel(); //get a random pixel object to be painted
 
   if (pixel) { //if a pixel was returned
@@ -425,22 +450,12 @@ async function pixelTimer() { //the loop responsible for placing pixels
     else {
       const randomDelay = Math.round(Math.random() * 5 * 1000); //random number of milliseconds to delay, up to 5 seconds
       setTimeout(pixelTimer, (60 * 1000) + randomDelay); //run again after one minute plus random delay
-      if(doCounter){
-        console.log("DONE SINCE LAST PIXEL PLACED: "+counterDone);
-        counterDone = 0;
-      } else {
-          // botCounter();
-      }
     }
   }
-  else { //if no pixel was returned (design is complete)
+  else { //if no pixel was returned (all designs are complete)
     setTimeout(pixelTimer, (30 * 1000)); //run again in 30 seconds
   }
 
-}
-function choosePixel() { //selects the pixel to write
-  const incorrectPixels = getIncorrectPixels(); //get array of pixels that need to be painted
-  return incorrectPixels[randomInteger(1, incorrectPixels.length) - 1]; //return random pixel from array
 }
 async function placePixel(pixel) { //attempts to place a pixel. returns true if the pixel is already there.
   const state = window.store.getState();
@@ -537,19 +552,4 @@ function setCookie(cname, cvalue, exdays) { //sets cookie
 }
 function refresh() {
   window.location.reload();
-}
-
-var counterTodo = 0;
-var counterDone = 0;
-var doCounter = false;
-async function botCounter(){
-    doCounter = true;
-    var newTodo = getIncorrectPixels([designArray[2]]).length;
-    var dif = counterTodo-newTodo;
-    if(dif>0){
-        counterDone += dif;
-    }
-    counterTodo = newTodo;
-    const randomDelay = Math.round(Math.random() * 1 * 10);
-    setTimeout(botCounter, 100 + randomDelay);
 }
