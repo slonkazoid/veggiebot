@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      2.26
+// @version      3.0.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -12,13 +12,31 @@
 // ==/UserScript==
 
 //jshint esversion: 10
-(function() {
-    'use strict';
 
 
-//check or generate bot ID
-const botID = getCookie("z") ? getCookie("z") : randomInteger(1000, 9999); //if cookie exists, get botID from there. otherwise create new ID.
-setCookie("z", botID, 1); //save bot ID to cookie
+//put up loading screen
+const splash = document.createElement("div");
+splash.style = `
+  position: absolute;
+  z-index: 999;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -42px;
+  transition: all 1s;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10.5px);
+  color:white;
+  -webkit-backdrop-filter: blur(10.5px);
+`;
+splash.innerHTML = `
+  <h1 style="font-size: 2rem;">Loading VeggieBot...</h1>
+`;
+splash.classList.add("hidden");
+document.body.appendChild(splash);
+splash.classList.remove("hidden"); //fade in
 
 //load library for png manipulation
 const pngLib = document.createElement("script");
@@ -26,20 +44,11 @@ pngLib.src = "https://files.catbox.moe/lvz4q6.js";
 pngLib.type = "application/javascript";
 document.body.appendChild(pngLib);
 
-//create flex container for UI
-const flex = document.createElement("div");
-flex.style = "position: absolute; display: flex; flex-flow: row wrap; gap: 5px; padding: 5px; background-color: black; border-radius: 0 0 13px 0; margin-top: -42px;";
-document.body.appendChild(flex);
+//check or generate bot ID
+const botID = getCookie("z") ? getCookie("z") : randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
+setCookie("z", botID, 2); //save bot ID to cookie
 
-//add loading indicator
-const loadingIndicator = document.createElement("div");
-loadingIndicator.innerHTML = "Loading...";
-loadingIndicator.style = "background-color: cornflowerblue; border-radius: 10px; padding: 10px;";
-flex.appendChild(loadingIndicator);
-
-//add pixels placed counter to UI
-const pixelCounter = document.createElement("div");
-pixelCounter.style = "background-color: cornflowerblue; border-radius: 10px; padding: 10px; display: none;";
+//figure out number of pixels placed
 let oldCount;
 if (getCookie("pixelCounter")) { //if pixel count cookie exists
   oldCount = getCookie("pixelCounter"); //old count is cookie value
@@ -47,36 +56,93 @@ if (getCookie("pixelCounter")) { //if pixel count cookie exists
 else {
   oldCount = 0; //otherwise 0
 }
-pixelCounter.innerHTML = "Pixels placed: " + oldCount;
-flex.appendChild(pixelCounter);
 
-//add todo counter to UI
-const todoCounter = document.createElement("div");
-todoCounter.style = "background-color: cornflowerblue; border-radius: 10px; padding: 10px; display: none;";
-todoCounter.innerHTML = "Loading...";
-flex.appendChild(todoCounter);
+//div that holds all injected UI components
+const div = document.createElement("div");
+div.style = "margin-top: -42px;";
+div.innerHTML = `
+  <style>
+    .ui {
+      position: absolute;
+      display: flex;
+      flex-flow: row wrap;
+      gap: 5px;
+      padding: 5px;
+      background-color: black;
+      border-radius: 0 0 13px 0;
+    }
+    .ui div {
+      background-color: cornflowerblue;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .infoButton {
+      background-color: cornflowerblue;
+      border-radius: 10px;
+      padding: 10px;
+      font-weight: 900;
+      width: 44px;
+      text-align: center;
+    }
 
-//add info button to UI
-const infoButton = document.createElement("button");
-infoButton.style = "background-color: cornflowerblue; border-radius: 10px; padding: 10px; font-weight: 900; width: 44px; text-align: center;";
-infoButton.onclick = function showInfo() {document.querySelector(".infoPanel").style.display = "block";};
-infoButton.innerHTML = "?";
-flex.appendChild(infoButton);
+    .infoPanel {
+      position: absolute;
+      z-index: 999;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-//info panel popup
-const infoPanel = document.createElement("div");
-infoPanel.classList.add("infoPanel");
-infoPanel.style = "display:none; margin-top: -42px;";
-infoPanel.innerHTML = `
-  <div style="position: absolute;z-index: 999;width: 100vw;height: 100vh;background-color: #000a;display: flex;justify-content: center;align-items: center;">
-    <div style="background-color: white;padding: 20px;border-radius: 10px;">
-      <strong>Debug Info</strong>
-      <br>
-      Version: <span class="version">a</span>
-      <br>
-      Bot ID: <span class="botID">123</span>
-      <br>
-      <br>
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10.5px);
+      color:white;
+      -webkit-backdrop-filter: blur(10.5px);
+
+      transition: all 0.3s;
+    }
+
+    .closeInfoButton {
+      background-color: #3668ff91;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 15px;
+      box-shadow: 0px 0px 20px 1px #00000038;
+      transition: box-shadow 0.3s, background 0.3s;
+    }
+    .closeInfoButton:hover {
+      box-shadow: 0px 0px 20px 8px #0000005a;
+      background-color: #3668ffa3;
+    }
+
+    .hidden {
+      opacity: 0%;
+      visibility: hidden;
+    }
+  </style>
+  <div class="ui">
+    <div class="pixelCounter">Pixels placed: ${oldCount}</div>
+    <div class="todoCounter"></div>
+    <button class="infoButton">?</button>
+  </div>
+  <div class="infoPanel hidden">
+    <div style="display: flex; flex-flow: column; gap: 20px; width: 430px;">
+      <!-- <div style="display: flex; flex-flow: row; gap: 10px;">
+        <img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;";>
+        <div style="display: flex; flex-flow: column; justify-content: center;">
+          <span>
+            <strong class="username"></strong>
+            <span class="discriminator"></span>
+          </span>
+          <br>
+          <a href="https://veggiebot.thechristmasstation.org/auth/logout" style="color: cornflowerblue; text-decoration: underline;">Log out</a>
+        </div>
+      </div> -->
+      <div>
+        <strong>Debug Info</strong><br>
+        Version: <span class="version">${GM_info.script.version}</span><br>
+        Bot ID: <span class="botID">${botID}</span><br>
+      </div>
       <table>
         <tbody class="designsTable">
           <tr style="text-align: left;">
@@ -86,28 +152,52 @@ infoPanel.innerHTML = `
           </tr>
         </tbody>
       </table>
-      <button class="closeInfoButton" style="background-color: cornflowerblue;padding: 10px;border-radius: 6px;margin-top: 15px;">Close</button>
+      <button class="closeInfoButton"><strong>Close</strong></button>
     </div>
-  </div>`;
-document.body.appendChild(infoPanel);
+  </div>
+`;
+document.body.appendChild(div);
 
-//close button function
-document.querySelector(".closeInfoButton").onclick = function closeInfo() {document.querySelector(".infoPanel").style.display = "none";};
+document.querySelector(".infoButton").onclick = function showInfo() {document.querySelector(".infoPanel").classList.remove("hidden");}; //add action to info button
+document.querySelector(".closeInfoButton").onclick = function closeInfo() {document.querySelector(".infoPanel").classList.add("hidden");}; //close button function
 
-//load values into info panel
-document.querySelector(".botID").innerHTML = botID;
-document.querySelector(".version").innerHTML = GM_info.script.version;
+// //check if user is authorized
+// fetch("https://veggiebot.thechristmasstation.org/user", {credentials: 'include'})
+// .then((response) => {
+//   if (response.status === 401) { //user is not logged in
+//     window.location.replace("https://veggiebot.thechristmasstation.org/auth/login");
+//   }
+//   else if (response.status === 200) { //user is logged in and authorized
+//     response.text().then((result) => { //pull out text
+//       const user = JSON.parse(result); //convert text to json
+//
+//       //fill in the user info in the UI
+//       document.querySelector(".username").innerHTML = user.username;
+//       document.querySelector(".discriminator").innerHTML = "#" + user.discriminator;
+//       document.querySelector(".avatar").src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`;
+//     });
+//   }
+// });
 
 let pngtoy;
 const designArray = []; //array of design objects
 
+setTimeout(refresh, (30 * 60 * 1000)); //refresh page after 30 mins
+
 //when page is done loading, start bot
 window.onload = async function() {
 
-
-  setTimeout(refresh, (30 * 60 * 1000)); //refresh page after 30 mins
-
   pngtoy = new PngToy();
+
+  // //get designs from api
+  // fetch("https://veggiebot.thechristmasstation.org/designs", {credentials: 'include'})
+  // .then((response) => {
+  //   response.text().then((result) => {
+  //     const rawDesignArray = JSON.parse(result);
+  //     console.log(rawDesignArray);
+  //   });
+  // });
+
 
   const rawDesignArray = [
     /*{
@@ -122,17 +212,11 @@ window.onload = async function() {
       yCoord: 9957,
       name: "Watch Dominon text",
     },
-      // https://i.imgur.com/lmvqe6j.png
-    /*{
-      url: "https://i.imgur.com/W4NNBdy.png", // watch dominion be kind go vegan
-      xCoord: -141,
-      yCoord: 9957,
-    },
-    {
-      url: "https://i.imgur.com/vaquknj.png", // www.watchdominion.org
-      xCoord: -141,
-      yCoord: 9957,
-    },*/
+    // {
+    //   url: "https://i.imgur.com/vaquknj.png", // www.watchdominion.org
+    //   xCoord: -141,
+    //   yCoord: 9957,
+    // },
     {
       url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/mainBanner.png",
       xCoord: -148,
@@ -171,14 +255,28 @@ window.onload = async function() {
     },
   ];
 
-  const designsTable = document.querySelector(".designsTable");
-  for (const design of rawDesignArray) { //for each design
-    design.pixels = await designPixelArray(design);
+  for (const design of rawDesignArray) { //process each design
+
+    design.data = await pngtoy.fetch(design.url).then(() => pngtoy.decode()).then(bmp => bmp); //extract png data
+
+    design.pixels = [];
+    for (var x = 0; x < design.data.width; x++) { //for each pixel column of the design
+      for(var y = 0; y < design.data.height; y++) { //for each pixel row of the design
+        const color = getPixelColor(design, x, y); //get pixel color
+        const pixel = { //create pixel object
+          x: x + design.xCoord,
+          y: y + design.yCoord,
+          color: color,
+        };
+        design.pixels.push(pixel); //add pixel to array
+      }
+    }
     designArray.push(design); //add design to processed designs array
 
     //create row in designs table on info panel
+    const designsTable = document.querySelector(".designsTable");
     const row = document.createElement("tr");
-    row.style = "border-top: 1px solid #ddd;";
+    row.style = "border-top: 1px solid rgb(115, 115, 115);";
     row.innerHTML = `
       <td style="padding: 5px"><a href="${design.url}" target="_blank">${design.name}</a></td>
       <td><a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">${design.xCoord}, ${design.yCoord}</a></td>
@@ -187,32 +285,13 @@ window.onload = async function() {
     designsTable.appendChild(row);
   }
 
-  //hide loading indicator and display UI
-  loadingIndicator.style.display = "none";
-  pixelCounter.style.display = "block";
-  todoCounter.style.display = "block";
+  //take down splash screen
+  splash.classList.add("hidden");
 
   webhook(`Connected.`); //send connection message to webhook
   pixelTimer(); //start pixel placement loop
 
 };
-
-async function designPixelArray(design) { //adds pixel array to design object
-  design.data = await pngtoy.fetch(design.url).then(() => pngtoy.decode()).then(bmp => bmp); //png data
-  const pixels = [];
-  for (var x = 0; x < design.data.width; x++) { //for each pixel column of the design
-    for(var y = 0; y < design.data.height; y++) { //for each pixel row of the design
-      const color = getPixelColor(design, x, y); //get pixel color
-      const pixel = { //create pixel object
-        x: x + design.xCoord,
-        y: y + design.yCoord,
-        color: color,
-      };
-      pixels.push(pixel); //add pixel to array
-    }
-  }
-  return pixels;
-}
 
 function getPixelColor(design, x, y) { //returns color code for given pixel in a design, by design-level coordinates
   const rawColors = design.data.bitmap; //rbg array from canvas
@@ -303,7 +382,7 @@ function getPixelColor(design, x, y) { //returns color code for given pixel in a
     },
   ];
 
-  if(rawColors[offset+3]>10){ // if alpha > 10
+  if(rawColors[offset+3]>10){ // if alpha > 10 (ignores transparent pixels)
       for (const color of colorOptions) { //for each possible color
           if ( //if each r g b value is within 10 of the actual color
               rawColors[offset + 0] < (color.rgb[0] + 10) && rawColors[offset + 0] > (color.rgb[0] - 10) &&
@@ -320,7 +399,6 @@ function getPixelColor(design, x, y) { //returns color code for given pixel in a
   }
   return pixelColor;
 }
-
 function getIncorrectPixels (specificDesigns = null) { //returns an array of the pixel objects that need to be painted
   const incorrectPixels = [];
   const state = window.store.getState();
@@ -334,26 +412,11 @@ function getIncorrectPixels (specificDesigns = null) { //returns an array of the
     if(incorrectPixels.length > 0) break; // prioritise designs in array order
   }
 
-  todoCounter.innerHTML = "Pixels todo: " + incorrectPixels.length; //update pixel todo counter
+  document.querySelector(".todoCounter").innerHTML = "Pixels todo: " + incorrectPixels.length; //update pixel todo counter
   return incorrectPixels;
 }
-
-var counterTodo = 0;
-var counterDone = 0;
-var doCounter = false;
-async function botCounter(){
-    doCounter = true;
-    var newTodo = getIncorrectPixels([designArray[2]]).length;
-    var dif = counterTodo-newTodo;
-    if(dif>0){
-        counterDone += dif;
-    }
-    counterTodo = newTodo;
-    const randomDelay = Math.round(Math.random() * 1 * 10);
-    setTimeout(botCounter, 100 + randomDelay);
-}
-
 async function pixelTimer() { //the loop responsible for placing pixels
+  //todo set timeout based on response from pixel api
 
   const pixel = choosePixel(); //get a random pixel object to be painted
 
@@ -380,12 +443,10 @@ async function pixelTimer() { //the loop responsible for placing pixels
   }
 
 }
-
 function choosePixel() { //selects the pixel to write
   const incorrectPixels = getIncorrectPixels(); //get array of pixels that need to be painted
   return incorrectPixels[randomInteger(1, incorrectPixels.length) - 1]; //return random pixel from array
 }
-
 async function placePixel(pixel) { //attempts to place a pixel. returns true if the pixel is already there.
   const state = window.store.getState();
   if (window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color)) { //if pixel is already there
@@ -419,7 +480,7 @@ async function placePixel(pixel) { //attempts to place a pixel. returns true if 
   fetch("https://pixelcanvas.io/api/pixel", requestOptions)
   .then(response => response.text())
   .then(result => {
-    if (JSON.parse(result).result?.data.success) { //if server says the pixel was placed
+    if (JSON.parse(result).result.data.success) { //if server says the pixel was placed
 
       //update pixels placed counter in ui
       let newCount;
@@ -431,7 +492,7 @@ async function placePixel(pixel) { //attempts to place a pixel. returns true if 
       }
       setCookie("pixelCounter", newCount, 3); //update cookie
       const numregex = /[0-9]{1,}/;
-      pixelCounter.innerHTML = pixelCounter.innerHTML.replace(numregex, newCount); //change count in ui
+      document.querySelector(".pixelCounter").innerHTML = document.querySelector(".pixelCounter").innerHTML.replace(numregex, newCount); //change count in ui
 
       //send message to webhook
       webhook("Pixel placed.");
@@ -442,26 +503,22 @@ async function placePixel(pixel) { //attempts to place a pixel. returns true if 
   })
   .catch(error => console.error('error', error)); //network error
 }
-
 function webhook(content) { //sends log/error message to discord webhook
-    return; // disabled
-  const headers = new Headers();
-  headers.append("Content-Type", "application/json");
-  const webhookBody = JSON.stringify({
-    "content": `\`${botID}\` \`v${GM_info.script.version}\`: ` + content,
-  });
-  const webhookOpts = {
-    method: 'POST',
-    headers: headers,
-    body: webhookBody,
-  };
-  fetch("https://discord.com/api/webhooks/962127487519834152/9yWREq9fItx7dnaWfvzPZ5B7euCqd_UwvVat8YyhZTK-fdIAvb4i8TUMwieokms1Wz3J", webhookOpts);
+  // const headers = new Headers();
+  // headers.append("Content-Type", "application/json");
+  // const webhookBody = JSON.stringify({
+  //   "content": `\`${botID}\` \`v${GM_info.script.version}\`: ` + content,
+  // });
+  // const webhookOpts = {
+  //   method: 'POST',
+  //   headers: headers,
+  //   body: webhookBody,
+  // };
+  // fetch("https://veggiebot.thechristmasstation.org/webhook", webhookOpts);
 }
-
 function randomInteger(min, max) { //returns random int between min and max inclusive
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 function getCookie(cname) { //returns value of cookie by name
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
@@ -477,16 +534,27 @@ function getCookie(cname) { //returns value of cookie by name
   }
   return "";
 }
-
 function setCookie(cname, cvalue, exdays) { //sets cookie
   const d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
   let expires = "expires="+ d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
-
 function refresh() {
   window.location.reload();
 }
 
-})();
+var counterTodo = 0;
+var counterDone = 0;
+var doCounter = false;
+async function botCounter(){
+    doCounter = true;
+    var newTodo = getIncorrectPixels([designArray[2]]).length;
+    var dif = counterTodo-newTodo;
+    if(dif>0){
+        counterDone += dif;
+    }
+    counterTodo = newTodo;
+    const randomDelay = Math.round(Math.random() * 1 * 10);
+    setTimeout(botCounter, 100 + randomDelay);
+}
