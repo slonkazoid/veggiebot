@@ -44,6 +44,12 @@ pngLib.src = "https://files.catbox.moe/lvz4q6.js";
 pngLib.type = "application/javascript";
 document.body.appendChild(pngLib);
 
+//load library for toasts
+const toastLib = document.createElement("script");
+toastLib.src = "https://cdn.jsdelivr.net/npm/toastify-js";
+toastLib.type = "application/javascript";
+document.body.appendChild(toastLib);
+
 //check or generate bot ID
 const botID = getCookie("z") ? getCookie("z") : randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
 setCookie("z", botID, 2); //save bot ID to cookie
@@ -61,6 +67,7 @@ else {
 const div = document.createElement("div");
 div.style = "margin-top: -42px;";
 div.innerHTML = `
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <style>
     .ui {
       position: absolute;
@@ -244,7 +251,8 @@ window.onload = async function() {
     designArray.push(await Design.new(design.url, design.xCoord, design.yCoord, design.name));
   }
   console.log(designArray);
-  refreshDesignsTable();
+  console.log(designArray[0].pixels[0].design);
+  refreshToDo();
 
   //take down splash screen
   splash.classList.add("hidden");
@@ -254,7 +262,7 @@ window.onload = async function() {
 };
 
 //pixelvanvas functions
-function refreshDesignsTable() { //clears and reloads the design table in the UI
+function refreshToDo() { //clears and reloads the design table in the UI
   const designsTable = document.querySelector(".designsTable");
   designsTable.innerHTML = `
     <tr style="text-align: left;">
@@ -290,9 +298,9 @@ function choosePixel() { //selects the pixel to write
   }
 }
 async function pixelTimer() { //the loop responsible for placing pixels
-  //todo set timeout based on response from pixel api
+  //TODO set timeout based on response from pixel api
 
-  refreshDesignsTable();
+  refreshToDo();
   const pixel = choosePixel(); //get a random pixel object to be painted
 
   if (pixel) { //if a pixel was returned
@@ -375,7 +383,7 @@ class Design {
     for (var x = 0; x < data.width; x++) { //for each pixel column of the design
       for(var y = 0; y < data.height; y++) { //for each pixel row of the design
         const color = getDesignPixelColor(data, x, y); //get pixel color
-        const pixel = new Pixel(x + xCoord, y + yCoord, color);
+        const pixel = new Pixel(x + xCoord, y + yCoord, color, name);
         this.pixels.push(pixel); //add pixel to array
       }
     }
@@ -386,7 +394,7 @@ class Design {
     const incorrectPixels = [];
     const state = window.store.getState();
     for (const pixel of this.pixels) { //for each pixel in design's pixel array
-      if (pixel.color != null && !window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color)) { //if pixel isn't correct
+      if (pixel.color != null && !window.isSameColorIn(state,[pixel.x, pixel.y], pixel.color.id)) { //if pixel isn't correct
         incorrectPixels.push(pixel); //add pixel to incorrect pixel array
       }
     }
@@ -489,7 +497,7 @@ function getDesignPixelColor(data, x, y) { //returns color code for given pixel 
               rawColors[offset + 1] < (color.rgb[1] + 10) && rawColors[offset + 1] > (color.rgb[1] - 10) &&
               rawColors[offset + 2] < (color.rgb[2] + 10) && rawColors[offset + 2] > (color.rgb[2] - 10)
           ) {
-              pixelColor = color.id; //pixel is this color
+              pixelColor = color; //pixel is this color
           }
       }
       if (pixelColor === null) {
@@ -501,15 +509,19 @@ function getDesignPixelColor(data, x, y) { //returns color code for given pixel 
 }
 
 class Pixel {
-  constructor(x, y, color) {
+  constructor(x, y, color, designName) {
     this.x = x;
     this.y = y;
     this.color = color;
     this.wasabi =  x + y + 2342;
+    this.designName = designName;
+  }
+  get design() {
+    return designArray.find(design => design.name === this.designName);
   }
   async place() { //attempts to place the pixel. returns true if the pixel is already there.
     const state = window.store.getState();
-    if (window.isSameColorIn(state,[this.x, this.y], this.color)) { //if pixel is already there
+    if (window.isSameColorIn(state,[this.x, this.y], this.color.id)) { //if pixel is already there
       return true;
     }
 
@@ -521,7 +533,7 @@ class Pixel {
 
     var raw = JSON.stringify({
       "appCheckToken": firebaseToken,
-      "color": this.color,
+      "color": this.color.id,
       "fingerprint": fingerprint,
       "wasabi": this.wasabi,
       "x": this.x,
@@ -554,6 +566,18 @@ class Pixel {
 
         //send message to webhook
         webhook("Pixel placed.");
+
+        Toastify({
+          text: `Placed a ${this.color.name} pixel in ${this.design.name} (${this.x}, ${this.y})`,
+          duration: 10000,
+          close: true,
+          gravity: "bottom", // `top` or `bottom`
+          position: "center", // `left`, `center` or `right`
+          stopOnFocus: true, // Prevents dismissing of toast on hover
+          style: {
+            background: "cornflowerblue"
+          }
+        }).showToast();
       }
       else { //server returned 200 but gives an error message
         console.error(result);
