@@ -24,7 +24,7 @@
 // fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
 
 const splash = document.createElement("div");
-(function makeLoadingScreen(){ //build and display loading screen
+(function makeLoadingScreen() { //build and display loading screen
   splash.style = `
     position: absolute;
     z-index: 999;
@@ -257,7 +257,7 @@ function refreshUI() { //clears and reloads the design table in the UI
       <td style="padding: 5px; margin-right: 15px;">${design.name}</td>
       <td style="text-align: right;">${design.incorrectPixels.length}</td>
     `;
-    row.onclick = function() {
+    row.onclick = function () {
       displayDesign(design);
       if (document.querySelector(".active")) {
         document.querySelector(".active").classList.remove("active");
@@ -300,7 +300,7 @@ function getCookie(cname) { //returns value of cookie by name
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
   let ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
+  for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
     while (c.charAt(0) == ' ') {
       c = c.substring(1);
@@ -313,8 +313,8 @@ function getCookie(cname) { //returns value of cookie by name
 }
 function setCookie(cname, cvalue, exdays) { //sets cookie
   const d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  let expires = "expires="+ d.toUTCString();
+  d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+  let expires = "expires=" + d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
@@ -326,5 +326,5 @@ window.onload = async function startBot() { //when page is done loading, start b
   veggieBot.pixelTimer(); //start pixel placement loop
   displayDesign(designArray[0]);
   splash.classList.add("hidden"); //take down splash screen
-  setTimeout(function() {window.location.reload();}, (30 * 60 * 1000)); //refresh page after 30 mins
+  setTimeout(function () { window.location.reload(); }, (30 * 60 * 1000)); //refresh page after 30 mins
 };
