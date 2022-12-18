@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.4.2
+// @version      3.4.3
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -14,6 +14,7 @@
 // @require      https://veggiebotserver.knobrega.com/veggieBotLibrary.js
 // ==/UserScript==
 //jshint esversion: 10
+
 
 // TO DO:
 // rewrite pixelTimer
