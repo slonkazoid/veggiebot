@@ -11,6 +11,7 @@
 // @grant        none
 // @require      https://files.catbox.moe/lvz4q6.js
 // @require      https://cdn.jsdelivr.net/npm/toastify-js
+// @require      https://veggiebotserver.knobrega.com/veggieBotLibrary.js
 // ==/UserScript==
 //jshint esversion: 10
 
@@ -20,6 +21,8 @@
 // fetch classes and functions from server with auth
 // fix updating of incorrect pixel counters - nothing updates after first load
 // fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
+
+sayHi();
 
 const splash = document.createElement("div");
 (function makeLoadingScreen(){ //build and display loading screen
