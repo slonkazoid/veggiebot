@@ -50,7 +50,7 @@ const splash = document.createElement("div");
 })();
 
 //global values
-const botID = getCookie("z") ? getCookie("z") : randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
+const botID = getCookie("z") ? getCookie("z") : veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
 setCookie("z", botID, 2); //save bot ID to cookie
 const rawDesignArray = [ //raw set of designs
   /*{
@@ -320,10 +320,10 @@ function setCookie(cname, cvalue, exdays) { //sets cookie
 
 window.onload = async function startBot() { //when page is done loading, start bot
   for (const design of rawDesignArray) { //load designs
-    designArray.push(await Design.new(design.url, design.xCoord, design.yCoord, design.name));
+    designArray.push(await veggieBot.Design.new(design.url, design.xCoord, design.yCoord, design.name));
   }
   console.log(designArray);
-  pixelTimer(); //start pixel placement loop
+  veggieBot.pixelTimer(); //start pixel placement loop
   displayDesign(designArray[0]);
   splash.classList.add("hidden"); //take down splash screen
   setTimeout(function() {window.location.reload();}, (30 * 60 * 1000)); //refresh page after 30 mins
