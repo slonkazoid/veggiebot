@@ -6,8 +6,8 @@
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
-// @updateURL    https://raw.githubusercontent.com/kevin8181/veggiebot/main/veggiebot.user.js
-// @downloadURL  https://raw.githubusercontent.com/kevin8181/veggiebot/main/veggiebot.user.js
+// @updateURL    https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/veggiebot.user.js
+// @downloadURL  https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/veggiebot.user.js
 // @grant        none
 // @require      https://files.catbox.moe/lvz4q6.js
 // @require      https://cdn.jsdelivr.net/npm/toastify-js
@@ -60,43 +60,43 @@ const rawDesignArray = [ //raw set of designs
     name: "New small banner",
   },*/
   {
-    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/watchDominion.png",
+    url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/watchDominion.png",
     xCoord: -141,
     yCoord: 9957,
     name: "Watch Dominon text",
   },
   {
-    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/mainBanner.png",
+    url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/mainBanner.png",
     xCoord: -148,
     yCoord: 9950,
     name: "Main Banner Full Design",
   },
   {
-    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/elwoods.png",
+    url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/elwoods.png",
     xCoord: -68,
     yCoord: 10068,
     name: "Elwood's Large",
   },
   {
-    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/elwoodsSmall.png",
+    url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/elwoodsSmall.png",
     xCoord: -1699,
     yCoord: 9598,
     name: "Elwood's Small",
   },
   {
-    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/train.png",
+    url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/train.png",
     xCoord: 27,
     yCoord: 10050,
     name: "Train",
   },
   {
-    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/tunnel.png",
+    url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/tunnel.png",
     xCoord: -148,
     yCoord: 10051,
     name: "Tunnel",
   },
   // {
-  //   url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/solid_black_attack_superstraight.png",
+  //   url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/solid_black_attack_superstraight.png",
   //   xCoord: -143,
   //   yCoord: 9834,
   //   name: "Black out superstraight",
