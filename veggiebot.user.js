@@ -22,6 +22,8 @@
 // fix updating of incorrect pixel counters - nothing updates after first load
 // fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
 
+sayHi();
+
 const splash = document.createElement("div");
 (function makeLoadingScreen(){ //build and display loading screen
   splash.style = `
