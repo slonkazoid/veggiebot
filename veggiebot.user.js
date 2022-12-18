@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.4.3
+// @version      3.5.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
