@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.4.0
+// @version      3.4.1
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -118,10 +118,8 @@ const designArray = []; //array of processed Design objects
         font-family: monospace;
 
         height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(10.5px);
+        background: #202123;
         color:white;
-        -webkit-backdrop-filter: blur(10.5px);
         font-size: 12px;
       }
       .appTitle {
@@ -174,11 +172,11 @@ const designArray = []; //array of processed Design objects
         vertical-align: middle;
       }
       .designInfo {
-        background: #222;
+        background: #2b2d32;
         color:  white;
         padding: 10px;
         border-radius: 10px;
-        border: 2px solid #333;
+        border: 2px solid #36383f;
 
         display: flex;
         flex-flow: column;
@@ -499,7 +497,6 @@ class Design {
     console.error(`No color found at coordinates ${x}, ${y}.`);
   }
 }
-
 class Pixel {
   constructor(x, y, color, designName) {
     this.x = x;
