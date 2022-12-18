@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.3.0
+// @version      3.4.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -9,179 +9,48 @@
 // @updateURL    https://raw.githubusercontent.com/kevin8181/veggiebot/main/veggiebot.user.js
 // @downloadURL  https://raw.githubusercontent.com/kevin8181/veggiebot/main/veggiebot.user.js
 // @grant        none
+// @require      https://files.catbox.moe/lvz4q6.js
+// @require      https://cdn.jsdelivr.net/npm/toastify-js
 // ==/UserScript==
-
 //jshint esversion: 10
 
+// TO DO:
+// rewrite pixelTimer
+// fetch rawDesignArray from server with auth
+// fetch classes and functions from server with auth
+// fix updating of incorrect pixel counters - nothing updates after first load
+// fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
 
-//put up loading screen
 const splash = document.createElement("div");
-splash.style = `
-  position: absolute;
-  z-index: 999;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: -42px;
-  transition: all 1s;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10.5px);
-  color:white;
-  -webkit-backdrop-filter: blur(10.5px);
-`;
-splash.innerHTML = `
-  <h1 style="font-size: 2rem;">Loading VeggieBot...</h1>
-`;
-splash.classList.add("hidden");
-document.body.appendChild(splash);
-splash.classList.remove("hidden"); //fade in
+(function makeLoadingScreen(){ //build and display loading screen
+  splash.style = `
+    position: absolute;
+    z-index: 999;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: -42px;
+    transition: all 1s;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10.5px);
+    color:white;
+    -webkit-backdrop-filter: blur(10.5px);
+    font-family: monospace;
+  `;
+  splash.innerHTML = `
+    <h1 style="font-size: 2rem;">Loading VeggieBot...</h1>
+  `;
+  splash.classList.add("hidden");
+  document.body.appendChild(splash);
+  splash.classList.remove("hidden"); //fade in
+})();
 
-//load library for png manipulation
-const pngLib = document.createElement("script");
-pngLib.src = "https://files.catbox.moe/lvz4q6.js";
-pngLib.type = "application/javascript";
-document.body.appendChild(pngLib);
-
-//load library for toasts
-const toastLib = document.createElement("script");
-toastLib.src = "https://cdn.jsdelivr.net/npm/toastify-js";
-toastLib.type = "application/javascript";
-document.body.appendChild(toastLib);
-
-//check or generate bot ID
+//global values
 const botID = getCookie("z") ? getCookie("z") : randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
 setCookie("z", botID, 2); //save bot ID to cookie
-
-//figure out number of pixels placed
-let oldCount;
-if (getCookie("pixelCounter")) { //if pixel count cookie exists
-  oldCount = getCookie("pixelCounter"); //old count is cookie value
-}
-else {
-  oldCount = 0; //otherwise 0
-}
-
-//div that holds all injected UI components
-const div = document.createElement("div");
-div.style = "margin-top: -42px;";
-div.innerHTML = `
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-  <style>
-    .ui {
-      position: absolute;
-      display: flex;
-      flex-flow: row wrap;
-      gap: 5px;
-      padding: 5px;
-      background-color: black;
-      border-radius: 0 0 13px 0;
-    }
-    .ui div {
-      background-color: cornflowerblue;
-      border-radius: 10px;
-      padding: 10px;
-    }
-    .infoButton {
-      background-color: cornflowerblue;
-      border-radius: 10px;
-      padding: 10px;
-      font-weight: 900;
-      width: 44px;
-      text-align: center;
-    }
-
-    .infoPanel {
-      position: absolute;
-      z-index: 999;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(10.5px);
-      color:white;
-      -webkit-backdrop-filter: blur(10.5px);
-
-      transition: all 0.3s;
-    }
-
-    .closeInfoButton {
-      background-color: #3668ff91;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 15px;
-      box-shadow: 0px 0px 20px 1px #00000038;
-      transition: box-shadow 0.3s, background 0.3s;
-    }
-    .closeInfoButton:hover {
-      box-shadow: 0px 0px 20px 8px #0000005a;
-      background-color: #3668ffa3;
-    }
-
-    .hidden {
-      opacity: 0%;
-      visibility: hidden;
-    }
-  </style>
-  <div class="ui">
-    <div class="pixelCounter">Pixels placed: ${oldCount}</div>
-    <div class="todoCounter"></div>
-    <button class="infoButton">?</button>
-  </div>
-  <div class="infoPanel hidden">
-    <div style="display: flex; flex-flow: column; gap: 20px; width: 430px;">
-      <!-- <div style="display: flex; flex-flow: row; gap: 10px;">
-        <img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;";>
-        <div style="display: flex; flex-flow: column; justify-content: center;">
-          <span>
-            <strong class="username"></strong>
-            <span class="discriminator"></span>
-          </span>
-          <br>
-          <a href="https://veggiebot.thechristmasstation.org/auth/logout" style="color: cornflowerblue; text-decoration: underline;">Log out</a>
-        </div>
-      </div> -->
-      <div>
-        <strong>Debug Info</strong><br>
-        Version: <span class="version">${GM_info.script.version}</span><br>
-        Bot ID: <span class="botID">${botID}</span><br>
-      </div>
-      <table>
-        <tbody class="designsTable">
-        </tbody>
-      </table>
-      <button class="closeInfoButton"><strong>Close</strong></button>
-    </div>
-  </div>
-`;
-document.body.appendChild(div);
-
-document.querySelector(".infoButton").onclick = function showInfo() {document.querySelector(".infoPanel").classList.remove("hidden");}; //add action to info button
-document.querySelector(".closeInfoButton").onclick = function closeInfo() {document.querySelector(".infoPanel").classList.add("hidden");}; //close button function
-
-// //check if user is authorized
-// fetch("https://veggiebot.thechristmasstation.org/user", {credentials: 'include'})
-// .then((response) => {
-//   if (response.status === 401) { //user is not logged in
-//     window.location.replace("https://veggiebot.thechristmasstation.org/auth/login");
-//   }
-//   else if (response.status === 200) { //user is logged in and authorized
-//     response.text().then((result) => { //pull out text
-//       const user = JSON.parse(result); //convert text to json
-//
-//       //fill in the user info in the UI
-//       document.querySelector(".username").innerHTML = user.username;
-//       document.querySelector(".discriminator").innerHTML = "#" + user.discriminator;
-//       document.querySelector(".avatar").src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`;
-//     });
-//   }
-// });
-
-const rawDesignArray = [
+const rawDesignArray = [ //raw set of designs
   /*{
     url: "https://i.imgur.com/lmvqe6j.png",
     xCoord: 197,
@@ -224,63 +93,178 @@ const rawDesignArray = [
     yCoord: 10051,
     name: "Tunnel",
   },
-  {
-    url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/solid_black_attack_superstraight.png",
-    xCoord: -143,
-    yCoord: 9834,
-    name: "Black out superstraight",
-  },
+  // {
+  //   url: "https://raw.githubusercontent.com/kevin8181/veggiebot/main/designs/solid_black_attack_superstraight.png",
+  //   xCoord: -143,
+  //   yCoord: 9834,
+  //   name: "Black out superstraight",
+  // },
 ];
-const designArray = []; //array of design objects
+const designArray = []; //array of processed Design objects
 
-setTimeout(refresh, (30 * 60 * 1000)); //refresh page after 30 mins
+//UI
+(function buildUI() {
+  const div = document.createElement("div");
+  div.style = "margin-top: -42px;";
+  div.innerHTML = `
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+      .ui {
+        position: absolute;
+        display: flex;
+        flex-flow: column;
+        gap: 15px;
+        padding: 15px;
+        font-family: monospace;
 
-//when page is done loading, start bot
-window.onload = async function() {
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10.5px);
+        color:white;
+        -webkit-backdrop-filter: blur(10.5px);
+        font-size: 12px;
+      }
+      .appTitle {
+        font-size: 1.7em;
+      }
+      .appVersion {
+        color: #eeeeee;
+        padding-left: 10px;
+      }
+      .mainStats {
+        background-color: #0c41a0;
+        padding: 10px;
+        border-radius: 10px;
+        color: white;
+        border: 2px solid #3968bd;
 
-  // //get designs from api
-  // fetch("https://veggiebot.thechristmasstation.org/designs", {credentials: 'include'})
-  // .then((response) => {
-  //   response.text().then((result) => {
-  //     const rawDesignArray = JSON.parse(result);
-  //     console.log(rawDesignArray);
-  //   });
-  // });
+        display: flex;
+        flex-flow: column;
+        gap: 10px;
+      }
+      .infoButton {
+        background-color: #3668ff91;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 15px;
+        box-shadow: 0px 0px 20px 1px #00000038;
+        transition: box-shadow 0.3s, background 0.3s;
+      }
+      .infoButton:hover {
+        box-shadow: 0px 0px 20px 8px #0000005a;
+        background-color: #3668ffa3;
+      }
+      .hidden {
+        opacity: 0%;
+        visibility: hidden;
+      }
+      .inlineCode {
+        background-color: #222222;
+        color: white;
+        display: inline-block;
+        vertical-align: middle;
+        border-radius: 4px;
+        padding: 0 5px;
+      }
+      .pixel {
+        width: 1rem;
+        height: 1rem;
+        background-color: red;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .designInfo {
+        background: #222;
+        color:  white;
+        padding: 10px;
+        border-radius: 10px;
+        border: 2px solid #333;
 
-  for (const design of rawDesignArray) {
-    designArray.push(await Design.new(design.url, design.xCoord, design.yCoord, design.name));
-  }
-  console.log(designArray);
-  console.log(designArray[0].pixels[0].design);
-  refreshToDo();
-
-  //take down splash screen
-  splash.classList.add("hidden");
-
-  pixelTimer(); //start pixel placement loop
-
-};
-
-//pixelvanvas functions
-function refreshToDo() { //clears and reloads the design table in the UI
+        display: flex;
+        flex-flow: column;
+        gap: 10px;
+      }
+      .designTableRow {
+        border-top: 1px solid #666;
+      }
+      .designTableRow:hover {
+        background-color: #444;
+        cursor: pointer;
+      }
+      .active {
+        background-color: #0c41a0 !important;
+      }
+      a {
+        text-decoration: underline;
+        text-decoration-color: #0c41a0;
+        text-decoration-thickness: 2px;
+      }
+    </style>
+    <div class="ui">
+      <p><span class="appTitle">VeggieBot</span><span class="appVersion">v${GM_info.script.version} · #${botID}</span></p>
+      <div class="mainStats">
+        <span class="todoCounter"></span>
+        <span class="pixelsPlaced"></span>
+      </div>
+      <table>
+        <tbody class="designsTable">
+        </tbody>
+      </table>
+      <div class="designInfo">
+        <strong class="designName"></strong>
+        <span class="designCompletion"></span>
+        <span class="designDimensions"></span>
+        <span class="designLocation"></span>
+        <span class="designSize"></span>
+        <span class="designLink"></span>
+      </div>
+      <!-- <div style="display: flex; flex-flow: row; gap: 10px;">
+        <img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;";>
+        <div style="display: flex; flex-flow: column; justify-content: center;">
+          <span>
+            <strong class="username"></strong>
+            <span class="discriminator"></span>
+          </span>
+          <br>
+          <a href="https://veggiebot.thechristmasstation.org/auth/logout" style="color: cornflowerblue; text-decoration: underline;">Log out</a>
+        </div>
+      </div> -->
+    </div>
+  `;
+  document.body.appendChild(div);
+})();
+function displayDesign(design) {
+  const modal = document.querySelector('.designInfo');
+  document.querySelector('.designName').innerHTML = design.name;
+  document.querySelector('.designCompletion').innerHTML = `Completion: ${(design.width * design.height) - design.incorrectPixels.length} / ${design.width * design.height}`;
+  document.querySelector('.designLocation').innerHTML = `Location: <a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">(${design.xCoord}, ${design.yCoord})</a>`;
+  document.querySelector('.designDimensions').innerHTML = `Dimensions: ${design.width} × ${design.height}`;
+  document.querySelector('.designSize').innerHTML = `Size: ${design.pixels.length} pixels`;
+  document.querySelector('.designLink').innerHTML = `File: <a href="${design.url}" target="_blank" rel="noopener noreferrer">${design.url.substring(design.url.lastIndexOf('/') + 1)}</a>`;
+}
+function refreshUI() { //clears and reloads the design table in the UI
   const designsTable = document.querySelector(".designsTable");
   designsTable.innerHTML = `
     <tr style="text-align: left;">
       <th>Design</th>
-      <th>Location</th>
-      <th>Size</th>
-      <th>To Do</th>
+      <th>Pixels To Do</th>
     </tr>
   `;
   for (const design of designArray) { //for each design
     const row = document.createElement("tr");
-    row.style = "border-top: 1px solid rgb(115, 115, 115);";
+    row.classList.add("designTableRow");
     row.innerHTML = `
-      <td style="padding: 5px"><a href="${design.url}" target="_blank">${design.name}</a></td>
-      <td><a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">${design.xCoord}, ${design.yCoord}</a></td>
-      <td>${design.pixels.length}</td>
-      <td>${design.incorrectPixels.length}</td>
+      <td style="padding: 5px; margin-right: 15px;">${design.name}</td>
+      <td style="text-align: right;">${design.incorrectPixels.length}</td>
     `;
+    row.onclick = function() {
+      displayDesign(design);
+      if (document.querySelector(".active")) {
+        document.querySelector(".active").classList.remove("active");
+      }
+
+      this.classList.add("active");
+    };
     designsTable.appendChild(row);
   }
 
@@ -288,7 +272,45 @@ function refreshToDo() { //clears and reloads the design table in the UI
   for (const design of designArray) { //for every design
     totalIncorrectPixels += design.incorrectPixels.length; //add this design's incorrect pixels to total incorrect pixel count
   }
-  document.querySelector(".todoCounter").innerHTML = "Pixels todo: " + totalIncorrectPixels; //update pixel todo counter
+  document.querySelector(".todoCounter").innerHTML = `Pixels to do: ${totalIncorrectPixels}`; //update pixel todo counter
+  document.querySelector(".pixelsPlaced").innerHTML = `Pixels placed: ${getCookie("pixelCounter") ? getCookie("pixelCounter") : 0}`; //update pixels placed counter
+}
+
+// //check if user is authorized
+// fetch("https://veggiebot.thechristmasstation.org/user", {credentials: 'include'})
+// .then((response) => {
+//   if (response.status === 401) { //user is not logged in
+//     window.location.replace("https://veggiebot.thechristmasstation.org/auth/login");
+//   }
+//   else if (response.status === 200) { //user is logged in and authorized
+//     response.text().then((result) => { //pull out text
+//       const user = JSON.parse(result); //convert text to json
+//
+//       //fill in the user info in the UI
+//       document.querySelector(".username").innerHTML = user.username;
+//       document.querySelector(".discriminator").innerHTML = "#" + user.discriminator;
+//       document.querySelector(".avatar").src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`;
+//     });
+//   }
+// });
+
+async function pixelTimer() { //the loop responsible for placing pixels
+  const pixel = choosePixel(); //get a random pixel object to be painted
+  if (!pixel) { //no pixel was chosen, all designs are complete.
+    setTimeout(pixelTimer, (30 * 1000)); //run again in 30 seconds
+    refreshUI();
+  }
+
+  const noDelay = await pixel.place().then(function() {refreshUI();});
+  if (noDelay) {
+    console.log("Pixel is already correct, trying another...");
+    setTimeout(pixelTimer, (0.3 * 1000)); //run again after 0.3 seconds
+  }
+  else {
+    const randomDelay = Math.round(Math.random() * 5 * 1000); //random number of milliseconds to delay, up to 5 seconds
+    setTimeout(pixelTimer, (60 * 1000) + randomDelay); //run again after one minute plus random delay
+  }
+
 }
 function choosePixel() { //selects the pixel to write
   for (const design of designArray) { //for each design
@@ -297,31 +319,6 @@ function choosePixel() { //selects the pixel to write
     }
   }
 }
-async function pixelTimer() { //the loop responsible for placing pixels
-  //TODO set timeout based on response from pixel api
-
-  refreshToDo();
-  const pixel = choosePixel(); //get a random pixel object to be painted
-
-  if (pixel) { //if a pixel was returned
-    const noDelay = await pixel.place();
-
-    if (noDelay) {
-      console.log("Pixel is already correct, trying another...");
-      setTimeout(pixelTimer, (0.3 * 1000)); //run again after 0.3 seconds
-    }
-    else {
-      const randomDelay = Math.round(Math.random() * 5 * 1000); //random number of milliseconds to delay, up to 5 seconds
-      setTimeout(pixelTimer, (60 * 1000) + randomDelay); //run again after one minute plus random delay
-    }
-  }
-  else { //if no pixel was returned (all designs are complete)
-    setTimeout(pixelTimer, (30 * 1000)); //run again in 30 seconds
-  }
-
-}
-
-//general functions
 function webhook(content) { //sends log/error message to discord webhook
   // const headers = new Headers();
   // headers.append("Content-Type", "application/json");
@@ -359,9 +356,6 @@ function setCookie(cname, cvalue, exdays) { //sets cookie
   let expires = "expires="+ d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
-function refresh() {
-  window.location.reload();
-}
 
 class Design {
   static async new(url, xCoord, yCoord, name) { //call this function to create a new design
@@ -382,14 +376,13 @@ class Design {
     this.pixels = [];
     for (var x = 0; x < data.width; x++) { //for each pixel column of the design
       for(var y = 0; y < data.height; y++) { //for each pixel row of the design
-        const color = getDesignPixelColor(data, x, y); //get pixel color
+        const color = Design.getDesignPixelColor(data, x, y); //get pixel color
+
         const pixel = new Pixel(x + xCoord, y + yCoord, color, name);
         this.pixels.push(pixel); //add pixel to array
       }
     }
   }
-
-
   get incorrectPixels() {
     const incorrectPixels = [];
     const state = window.store.getState();
@@ -400,112 +393,111 @@ class Design {
     }
     return incorrectPixels;
   }
-}
-function getDesignPixelColor(data, x, y) { //returns color code for given pixel in a design, by design-level coordinates
-  const rawColors = data.bitmap; //rbg array from canvas
-  const offset = (data.width*y+x)*4;
 
-  let pixelColor = null;
+  static getDesignPixelColor(data, x, y) { //get color object for pixel by design-level coordinates
+    const rawColors = data.bitmap; //rbg array from canvas
+    const offset = (data.width*y+x)*4;
 
-  const colorOptions = [
-    {
-      name: "white",
-      id: 0,
-      rgb: [255, 255, 255],
-    },
-    {
-      name: "light grey",
-      id: 1,
-      rgb: [228, 228, 228],
-    },
-    {
-      name: "dark grey",
-      id: 2,
-      rgb: [136, 136, 136],
-    },
-    {
-      name: "black",
-      id: 3,
-      rgb: [34, 34, 34],
-    },
-    {
-      name: "pink",
-      id: 4,
-      rgb: [255, 167, 209],
-    },
-    {
-      name: "red",
-      id: 5,
-      rgb: [229, 0, 0],
-    },
-    {
-      name: "orange",
-      id: 6,
-      rgb: [229, 149, 0],
-    },
-    {
-      name: "brown",
-      id: 7,
-      rgb: [160, 106, 66],
-    },
-    {
-      name: "yellow",
-      id: 8,
-      rgb: [229, 217, 0],
-    },
-    {
-      name: "light green",
-      id: 9,
-      rgb: [148, 224, 68],
-    },
-    {
-      name: "dark green",
-      id: 10,
-      rgb: [2, 190, 1],
-    },
-    {
-      name: "light blue",
-      id: 11,
-      rgb: [0, 211, 221],
-    },
-    {
-      name: "middle blue",
-      id: 12,
-      rgb: [0, 131, 199],
-    },
-    {
-      name: "dark blue",
-      id: 13,
-      rgb: [0, 0, 234],
-    },
-    {
-      name: "light purple",
-      id: 14,
-      rgb: [207, 110, 228],
-    },
-    {
-      name: "dark purple",
-      id: 15,
-      rgb: [130, 0, 128],
-    },
-  ];
+    const colorOptions = [
+      {
+        name: "white",
+        id: 0,
+        rgb: [255, 255, 255],
+      },
+      {
+        name: "light grey",
+        id: 1,
+        rgb: [228, 228, 228],
+      },
+      {
+        name: "dark grey",
+        id: 2,
+        rgb: [136, 136, 136],
+      },
+      {
+        name: "black",
+        id: 3,
+        rgb: [34, 34, 34],
+      },
+      {
+        name: "pink",
+        id: 4,
+        rgb: [255, 167, 209],
+      },
+      {
+        name: "red",
+        id: 5,
+        rgb: [229, 0, 0],
+      },
+      {
+        name: "orange",
+        id: 6,
+        rgb: [229, 149, 0],
+      },
+      {
+        name: "brown",
+        id: 7,
+        rgb: [160, 106, 66],
+      },
+      {
+        name: "yellow",
+        id: 8,
+        rgb: [229, 217, 0],
+      },
+      {
+        name: "light green",
+        id: 9,
+        rgb: [148, 224, 68],
+      },
+      {
+        name: "dark green",
+        id: 10,
+        rgb: [2, 190, 1],
+      },
+      {
+        name: "light blue",
+        id: 11,
+        rgb: [0, 211, 221],
+      },
+      {
+        name: "middle blue",
+        id: 12,
+        rgb: [0, 131, 199],
+      },
+      {
+        name: "dark blue",
+        id: 13,
+        rgb: [0, 0, 234],
+      },
+      {
+        name: "light purple",
+        id: 14,
+        rgb: [207, 110, 228],
+      },
+      {
+        name: "dark purple",
+        id: 15,
+        rgb: [130, 0, 128],
+      },
+    ];
 
-  if(rawColors[offset+3]>10){ // if alpha > 10 (ignores transparent pixels)
-      for (const color of colorOptions) { //for each possible color
-          if ( //if each r g b value is within 10 of the actual color
-              rawColors[offset + 0] < (color.rgb[0] + 10) && rawColors[offset + 0] > (color.rgb[0] - 10) &&
-              rawColors[offset + 1] < (color.rgb[1] + 10) && rawColors[offset + 1] > (color.rgb[1] - 10) &&
-              rawColors[offset + 2] < (color.rgb[2] + 10) && rawColors[offset + 2] > (color.rgb[2] - 10)
-          ) {
-              pixelColor = color; //pixel is this color
-          }
-      }
-      if (pixelColor === null) {
-          console.error(`${rawColors[offset + 0]}, ${rawColors[offset + 1]}, ${rawColors[offset + 2]}`);
-          console.error(`No color found at coordinates ${x}, ${y}.`);
-      }
+    if (rawColors[offset+3]<=10) { //if this pixel is transparent
+      return null;
+    }
+
+    for (const color of colorOptions) { //for each possible color
+        if ( //if each r g b value is within 10 of the actual color
+            rawColors[offset + 0] < (color.rgb[0] + 10) && rawColors[offset + 0] > (color.rgb[0] - 10) &&
+            rawColors[offset + 1] < (color.rgb[1] + 10) && rawColors[offset + 1] > (color.rgb[1] - 10) &&
+            rawColors[offset + 2] < (color.rgb[2] + 10) && rawColors[offset + 2] > (color.rgb[2] - 10)
+        ) {
+            return color; //pixel is this color
+        }
+    }
+
+    console.error(`${rawColors[offset + 0]}, ${rawColors[offset + 1]}, ${rawColors[offset + 2]}`);
+    console.error(`No color found at coordinates ${x}, ${y}.`);
   }
-  return pixelColor;
 }
 
 class Pixel {
@@ -550,40 +542,45 @@ class Pixel {
     fetch("https://pixelcanvas.io/api/pixel", requestOptions)
     .then(response => response.text())
     .then(result => {
-      if (JSON.parse(result).result.data.success) { //if server says the pixel was placed
-
-        //update pixels placed counter in ui
-        let newCount;
-        if (getCookie("pixelCounter")) {
-          newCount = parseInt(getCookie("pixelCounter")) + 1; //new count = old count + 1
-        }
-        else {
-          newCount = 1;
-        }
-        setCookie("pixelCounter", newCount, 3); //update cookie
-        const numregex = /[0-9]{1,}/;
-        document.querySelector(".pixelCounter").innerHTML = document.querySelector(".pixelCounter").innerHTML.replace(numregex, newCount); //change count in ui
+      if (JSON.parse(result).result ? JSON.parse(result).result.data.success : false) { //if server says the pixel was placed
+        const oldCount = parseInt(getCookie("pixelCounter") ? getCookie("pixelCounter") : 0);
+        setCookie(
+          "pixelCounter",
+          (oldCount + 1),
+          3
+        ); //update cookie
 
         //send message to webhook
         webhook("Pixel placed.");
 
         Toastify({
-          text: `Placed a ${this.color.name} pixel in ${this.design.name} (${this.x}, ${this.y})`,
+          text: `Pixel placed.`,
           destination: `https://pixelcanvas.io/@${this.x},${this.y}`,
-          duration: 10000,
+          duration: 5000,
           close: false,
           gravity: "bottom", // `top` or `bottom`
-          position: "center", // `left`, `center` or `right`
+          position: "left", // `left`, `center` or `right`
           stopOnFocus: true, // Prevents dismissing of toast on hover
           style: {
-            background: "cornflowerblue"
+            background: "#0c41a0"
           }
         }).showToast();
       }
-      else { //server returned 200 but gives an error message
-        console.error(result);
+      else { //server gave a response but has an error message
+        // console.error(result);
       }
     })
-    .catch(error => console.error('error', error)); //network error
+    .catch(error => console.error('error', error)); //network or code error
   }
 }
+
+window.onload = async function startBot() { //when page is done loading, start bot
+  for (const design of rawDesignArray) { //load designs
+    designArray.push(await Design.new(design.url, design.xCoord, design.yCoord, design.name));
+  }
+  console.log(designArray);
+  pixelTimer(); //start pixel placement loop
+  displayDesign(designArray[0]);
+  splash.classList.add("hidden"); //take down splash screen
+  setTimeout(function() {window.location.reload();}, (30 * 60 * 1000)); //refresh page after 30 mins
+};
