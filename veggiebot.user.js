@@ -9,7 +9,6 @@
 // @updateURL    https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/veggiebot.user.js
 // @downloadURL  https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/veggiebot.user.js
 // @grant        none
-// @require      https://files.catbox.moe/lvz4q6.js
 // @require      https://cdn.jsdelivr.net/npm/toastify-js
 // @require      https://veggiebotserver.knobrega.com/veggieBotLibrary.js
 // ==/UserScript==
@@ -17,7 +16,6 @@
 
 
 // TO DO:
-// rewrite pixelTimer
 // fix updating of incorrect pixel counters - nothing updates after first load
 // fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
 
@@ -189,7 +187,7 @@ function displayDesign(design) {
 	document.querySelector('.designSize').innerHTML = `Size: ${design.pixels.length} pixels`;
 	document.querySelector('.designLink').innerHTML = `File: <a href="${design.url}" target="_blank" rel="noopener noreferrer">${design.url.substring(design.url.lastIndexOf('/') + 1)}</a>`;
 }
-function refreshUI() { //clears and reloads the design table in the UI
+function refreshUI(designArray) { //clears and reloads the design table in the UI
 	const designsTable = document.querySelector(".designsTable");
 	designsTable.innerHTML = `
 		<tr style="text-align: left;">
@@ -265,12 +263,13 @@ function setCookie(cname, cvalue, exdays) { //sets cookie
 	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
-let designArray = []; //array of final Design objects
+
 window.onload = async function startBot() { //when page is done loading, start bot
 	fetch("https://veggiebotserver.knobrega.com/designs") //fetch processed designs from server
 	.then(response => response.text())
 	.then(result => {
-		const processedDesignArray = JSON.parse(result);
+		const processedDesignArray = JSON.parse(result); //array of processed design objects
+		const designArray = []; //array of final Design objects
 
 		for (const processedDesign of processedDesignArray) { //for each processed design
 			designArray.push( new veggieBot.Design(processedDesign)); //create final Design and push to designArray
@@ -279,7 +278,7 @@ window.onload = async function startBot() { //when page is done loading, start b
 		window.designArray = designArray;
 		console.log(designArray);
 
-		veggieBot.pixelTimer(); //start pixel placement loop
+		veggieBot.pixelTimer(designArray); //start pixel placement loop
 		displayDesign(designArray[0]);
 		splash.classList.add("hidden"); //take down splash screen
 		setTimeout(function () { window.location.reload(); }, (30 * 60 * 1000)); //refresh page after 30 mins
