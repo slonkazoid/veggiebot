@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.5.0
+// @version      3.6.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -18,8 +18,6 @@
 
 // TO DO:
 // rewrite pixelTimer
-// fetch rawDesignArray from server with auth
-// fetch classes and functions from server with auth
 // fix updating of incorrect pixel counters - nothing updates after first load
 // fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
 
@@ -52,57 +50,6 @@ const splash = document.createElement("div");
 //global values
 const botID = getCookie("z") ? getCookie("z") : veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
 setCookie("z", botID, 2); //save bot ID to cookie
-const rawDesignArray = [ //raw set of designs
-	/*{
-		url: "https://i.imgur.com/lmvqe6j.png",
-		xCoord: 197,
-		yCoord: 10001,
-		name: "New small banner",
-	},*/
-	{
-		url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/watchDominion.png",
-		xCoord: -141,
-		yCoord: 9957,
-		name: "Watch Dominon text",
-	},
-	{
-		url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/mainBanner.png",
-		xCoord: -148,
-		yCoord: 9950,
-		name: "Main Banner Full Design",
-	},
-	{
-		url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/elwoods.png",
-		xCoord: -68,
-		yCoord: 10068,
-		name: "Elwood's Large",
-	},
-	{
-		url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/elwoodsSmall.png",
-		xCoord: -1699,
-		yCoord: 9598,
-		name: "Elwood's Small",
-	},
-	{
-		url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/train.png",
-		xCoord: 27,
-		yCoord: 10050,
-		name: "Train",
-	},
-	{
-		url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/tunnel.png",
-		xCoord: -148,
-		yCoord: 10051,
-		name: "Tunnel",
-	},
-	// {
-	//   url: "https://raw.githubusercontent.com/Vegan-PixelCanvas/veggiebot/main/designs/solid_black_attack_superstraight.png",
-	//   xCoord: -143,
-	//   yCoord: 9834,
-	//   name: "Black out superstraight",
-	// },
-];
-const designArray = []; //array of processed Design objects
 
 //UI
 (function buildUI() {
@@ -296,7 +243,6 @@ function refreshUI() { //clears and reloads the design table in the UI
 // });
 
 
-
 function getCookie(cname) { //returns value of cookie by name
 	let name = cname + "=";
 	let decodedCookie = decodeURIComponent(document.cookie);
@@ -319,13 +265,23 @@ function setCookie(cname, cvalue, exdays) { //sets cookie
 	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
+let designArray = []; //array of final Design objects
 window.onload = async function startBot() { //when page is done loading, start bot
-	for (const design of rawDesignArray) { //load designs
-		designArray.push(await veggieBot.Design.new(design.url, design.xCoord, design.yCoord, design.name));
-	}
-	console.log(designArray);
-	veggieBot.pixelTimer(); //start pixel placement loop
-	displayDesign(designArray[0]);
-	splash.classList.add("hidden"); //take down splash screen
-	setTimeout(function () { window.location.reload(); }, (30 * 60 * 1000)); //refresh page after 30 mins
+	fetch("https://veggiebotserver.knobrega.com/designs") //fetch processed designs from server
+	.then(response => response.text())
+	.then(result => {
+		const processedDesignArray = JSON.parse(result);
+
+		for (const processedDesign of processedDesignArray) { //for each processed design
+			designArray.push( new veggieBot.Design(processedDesign)); //create final Design and push to designArray
+		}
+
+		window.designArray = designArray;
+		console.log(designArray);
+
+		veggieBot.pixelTimer(); //start pixel placement loop
+		displayDesign(designArray[0]);
+		splash.classList.add("hidden"); //take down splash screen
+		setTimeout(function () { window.location.reload(); }, (30 * 60 * 1000)); //refresh page after 30 mins
+	});
 };
