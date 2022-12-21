@@ -19,6 +19,7 @@
 // fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
 
 
+
 //startup order
 //put up loading screen
 //global variables
