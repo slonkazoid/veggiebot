@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.7.0
+// @version      3.8.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -15,9 +15,7 @@
 
 
 // TO DO:
-// fix updating of incorrect pixel counters - nothing updates after first load
 // fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
-
 
 
 //startup order
@@ -38,7 +36,6 @@ const splash = document.createElement("div");
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		margin-top: -42px;
 		transition: all 1s;
 		background: rgba(0, 0, 0, 0.7);
 		backdrop-filter: blur(10.5px);
@@ -60,9 +57,6 @@ setCookie("z", botID, 2); //save bot ID to cookie
 let user;
 let ws;
 
-//load library
-
-
 //then check if user is authorized
 fetch("https://veggiebotserver.knobrega.com/user", {credentials: 'include'})
 .then((response) => {
@@ -79,7 +73,6 @@ fetch("https://veggiebotserver.knobrega.com/user", {credentials: 'include'})
 //then build UI
 function buildUI() {
 	const div = document.createElement("div");
-	div.style = "margin-top: -42px;";
 	div.innerHTML = `
 		<style>
 			.ui {
@@ -189,11 +182,11 @@ function buildUI() {
 				flex-flow: row;
 				gap: 10px;
 			}
-			a {
+			a, .fakeLink {
 				text-decoration: underline;
 				text-decoration-color: #1e58c0;
 				text-decoration-thickness: 2px;
-				color: 
+				cursor: pointer;
 			}
 			.logScroller {
 				background-color: black;
@@ -203,6 +196,17 @@ function buildUI() {
 				height: 10em;
 				padding: 10px;
 				white-space: nowrap;
+			}
+			#gameWindow + div + div {
+				width: 100px;
+			}
+			.textInput {
+				background-color: #2b2d32;
+				color: white;
+				border-radius: 4px;
+				border: 2px solid #36383f;
+				min-width: 0;
+				padding-left: 5px;
 			}
 		</style>
 		<div class="ui">
@@ -225,23 +229,50 @@ function buildUI() {
 					<span class="designLocation"></span>
 					<span class="designSize"></span>
 					<span class="designLink"></span>
+					<span class="designEnabled"</span>
 				</div>
 			</div>
 			<div class="uiStackBottom">
+				<div class="designInfo">
+					<div style="display: flex; flex-direction: column; gap: 5px;">
+						<strong>Jump to location</strong>
+						<div style="display: flex; flex-direction: row; gap: 8px;">
+						<input class="textInput jumpX" placeholder="x coord">
+						<input class="textInput jumpY" placeholder="y coord">
+						<button id="jumpButton" style="
+							background-color: #3668ff91;
+							padding: 5px 10px;
+							border-radius: 5px;
+							/* margin-top: 15px; */
+							box-shadow: 0px 0px 20px 1px #00000038;
+							transition: box-shadow 0.3s, background 0.3s;
+						">Go</button>
+						</div>
+					</div>
+				</div>
 				<div class="user">
-				<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`}">
-				<div style="display: flex; flex-flow: column; justify-content: center; gap: 1px;">
-					<span>
-						<strong class="username">${user.username}</strong>
-						<span class="discriminator">#${user.discriminator}</span>
-					</span>
-					<br>
-					<a href="https://veggiebotserver.knobrega.com/auth/logout">Log out</a>
+					<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`}">
+					<div style="display: flex; flex-flow: column; justify-content: center; gap: 1px;">
+						<span>
+							<strong class="username">${user.username}</strong>
+							<span class="discriminator">#${user.discriminator}</span>
+						</span>
+						<br>
+						<a href="https://veggiebotserver.knobrega.com/auth/logout">Log out</a>
+					</div>
 				</div>
 			</div>
 		</div>
 	`;
 	document.body.appendChild(div);
+
+	//TOOLS
+	//jump
+	document.querySelector("#jumpButton").addEventListener("click", () => {
+		window.setView(parseInt(document.querySelector(".jumpX").value), parseInt(document.querySelector(".jumpY").value));
+		document.querySelector(".jumpX").value = null;
+		document.querySelector(".jumpY").value = null;
+	});
 }
 
 window.onload = async function startBot() { //when page is done loading, start bot
@@ -257,7 +288,7 @@ window.onload = async function startBot() { //when page is done loading, start b
 		}
 
 		window.designArray = designArray;
-		console.log(designArray);
+		console.log("Design Array:", designArray);
 
 		veggieBot.pixelTimer(designArray, pixelCallback); //start pixel placement loop
 		displayDesign(designArray[0]);
@@ -284,10 +315,11 @@ window.onload = async function startBot() { //when page is done loading, start b
 function displayDesign(design) { //displays a Design in the ui's design inspector
 	document.querySelector('.designName').innerHTML = design.name;
 	document.querySelector('.designCompletion').innerHTML = `Completion: ${(design.width * design.height) - design.incorrectPixels.length} / ${design.width * design.height}`;
-	document.querySelector('.designLocation').innerHTML = `Location: <a href="https://pixelcanvas.io/@${design.xCoord},${design.yCoord}">(${design.xCoord}, ${design.yCoord})</a>`;
+	document.querySelector('.designLocation').innerHTML = `Location: <span class="fakeLink" onclick="window.setView(${design.xCoord}, ${design.yCoord})">(${design.xCoord}, ${design.yCoord})</span>`;
 	document.querySelector('.designDimensions').innerHTML = `Dimensions: ${design.width} × ${design.height}`;
 	document.querySelector('.designSize').innerHTML = `Size: ${design.pixels.length} pixels`;
 	document.querySelector('.designLink').innerHTML = `File: <a href="${design.url}" target="_blank" rel="noopener noreferrer">${design.url.substring(design.url.lastIndexOf('/') + 1)}</a>`;
+	document.querySelector('.designEnabled').innerHTML = `<label for="designEnabledCheckbox">Enabled: </label><input type="checkbox" id="designEnabledCheckbox" checked disabled>`
 }
 /**
  * Refreshes anything in the UI that changes
@@ -369,6 +401,8 @@ function pixelCallback (results) { //runs after each pixel placement attempt
 			3
 		); //update cookie
 	}
+
+	window.setWait(results.waitMS);
 
 	veggieBot.webhook(results.string);
 	// ws.send(JSON.stringify({
