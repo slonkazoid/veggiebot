@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.8.0
+// @version      3.8.1
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -15,16 +15,11 @@
 
 
 // TO DO:
-// fix pixels placed counter- should update AFTER the latest pixel has been placed, lags behind 1
+//issue where pixels are loaded as white when they're out of range
+//issue where the bot doesn't load right after refreshing
+//try increasing time until reload
 
 
-//startup order
-//put up loading screen
-//global variables
-
-//fetch user
-//THEN build UI
-//THEN start bot
 
 const splash = document.createElement("div");
 (function makeLoadingScreen() { //build and display loading screen
@@ -86,6 +81,7 @@ function buildUI() {
 				color:white;
 				font-size: 12px;
 				max-width: 340px;
+				overflow: scroll;
 			}
 			.uiStackTop {
 				display: flex;
@@ -269,13 +265,19 @@ function buildUI() {
 	//TOOLS
 	//jump
 	document.querySelector("#jumpButton").addEventListener("click", () => {
-		window.setView(parseInt(document.querySelector(".jumpX").value), parseInt(document.querySelector(".jumpY").value));
-		document.querySelector(".jumpX").value = null;
-		document.querySelector(".jumpY").value = null;
+		if (document.querySelector(".jumpX").value && document.querySelector(".jumpY").value) {
+			window.setView(parseInt(document.querySelector(".jumpX").value), parseInt(document.querySelector(".jumpY").value));
+			document.querySelector(".jumpX").value = null;
+			document.querySelector(".jumpY").value = null;
+		}
 	});
 }
 
 window.onload = async function startBot() { //when page is done loading, start bot
+
+	const delay = ms => new Promise(res => setTimeout(res, ms));
+	await delay(5000);
+
 	fetch("https://veggiebotserver.knobrega.com/designs", {credentials: 'include'}) //fetch processed designs from server
 	.then(response => response.text())
 	.then(result => {
@@ -306,7 +308,7 @@ window.onload = async function startBot() { //when page is done loading, start b
 			() => {
 				window.location.reload();
 			},
-			(30 * 60 * 1000)
+			(60 * 60 * 1000)
 		); //refresh page after 30 mins
 	});
 };
