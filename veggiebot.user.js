@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.8.3
+// @version      3.8.4
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -247,7 +247,7 @@ function buildUI() {
 					</div>
 				</div>
 				<div class="user">
-					<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`}">
+					<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64` : "https://cdn.discordapp.com/embed/avatars/0.png"}">
 					<div style="display: flex; flex-flow: column; justify-content: center; gap: 1px;">
 						<span>
 							<strong class="username">${user.username}</strong>
