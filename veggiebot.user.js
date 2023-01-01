@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.8.4
+// @version      3.8.5
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -13,16 +13,14 @@
 // ==/UserScript==
 //jshint esversion: 10
 
-
 // TO DO:
 //issue where pixels are loaded as white when they're out of range
 //issue where the bot doesn't load right after refreshing
 //try increasing time until reload
 
-
-
 const splash = document.createElement("div");
-(function makeLoadingScreen() { //build and display loading screen
+(function makeLoadingScreen() {
+	//build and display loading screen
 	splash.style = `
 		position: absolute;
 		z-index: 999;
@@ -47,23 +45,28 @@ const splash = document.createElement("div");
 })();
 
 //global values
-const botID = getCookie("z") ? getCookie("z") : veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
+const botID = getCookie("z")
+	? getCookie("z")
+	: veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
 setCookie("z", botID, 2); //save bot ID to cookie
 let user;
 let ws;
 
 //then check if user is authorized
-fetch("https://veggiebotserver.knobrega.com/user", {credentials: 'include'})
-.then((response) => {
-	if (response.status === 401) { //user is not logged in
+fetch("https://veggiebotserver.knobrega.com/user", {
+	credentials: "include",
+}).then((response) => {
+	if (response.status === 401) {
+		//user is not logged in
 		window.location.replace("https://veggiebotserver.knobrega.com/auth/login");
-	}
-	else if (response.status === 200) { //user is logged in and authorized
-		response.text().then((result) => { //pull out text
+	} else if (response.status === 200) {
+		//user is logged in and authorized
+		response.text().then((result) => {
+			//pull out text
 			user = JSON.parse(result); //convert text to json
 			buildUI();
-    	});
-  	}
+		});
+	}
 });
 //then build UI
 function buildUI() {
@@ -207,7 +210,9 @@ function buildUI() {
 		</style>
 		<div class="ui">
 			<div class="uiStackTop">
-				<p><span class="appTitle">VeggieBot</span><span class="appVersion">v${GM_info.script.version} · #${botID}</span></p>
+				<p><span class="appTitle">VeggieBot</span><span class="appVersion">v${
+					GM_info.script.version
+				} · #${botID}</span></p>
 				<div class="mainStats">
 					<span class="todoCounter"></span>
 					<span class="pixelsPlaced"></span>
@@ -232,22 +237,21 @@ function buildUI() {
 				<div class="designInfo">
 					<div style="display: flex; flex-direction: column; gap: 5px;">
 						<strong>Jump to location</strong>
-						<div style="display: flex; flex-direction: row; gap: 8px;">
-						<input class="textInput jumpX" placeholder="x coord">
-						<input class="textInput jumpY" placeholder="y coord">
-						<button id="jumpButton" style="
-							background-color: #3668ff91;
-							padding: 5px 10px;
-							border-radius: 5px;
-							/* margin-top: 15px; */
-							box-shadow: 0px 0px 20px 1px #00000038;
-							transition: box-shadow 0.3s, background 0.3s;
-						">Go</button>
-						</div>
+						<form id="jumpForm">
+							<div style="display: flex; flex-direction: row; gap: 8px;">
+								<input class="textInput jumpX" placeholder="x coord" required>
+								<input class="textInput jumpY" placeholder="y coord" required>
+								<input type="submit" value="Go" style="background-color: #3668ff91; padding: 5px 10px; border-radius: 5px; box-shadow: 0px 0px 20px 1px #00000038; transition: box-shadow 0.3s, background 0.3s; ">
+							</div>
+						</form>
 					</div>
 				</div>
 				<div class="user">
-					<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64` : "https://cdn.discordapp.com/embed/avatars/0.png"}">
+					<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${
+						user.avatar
+							? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
+							: "https://cdn.discordapp.com/embed/avatars/0.png"
+					}">
 					<div style="display: flex; flex-flow: column; justify-content: center; gap: 1px;">
 						<span>
 							<strong class="username">${user.username}</strong>
@@ -264,64 +268,83 @@ function buildUI() {
 
 	//TOOLS
 	//jump
-	document.querySelector("#jumpButton").addEventListener("click", () => {
-		if (document.querySelector(".jumpX").value && document.querySelector(".jumpY").value) {
-			window.setView(parseInt(document.querySelector(".jumpX").value), parseInt(document.querySelector(".jumpY").value));
-			document.querySelector(".jumpX").value = null;
-			document.querySelector(".jumpY").value = null;
-		}
+	jumpToolForm = document.querySelector("#jumpForm");
+	jumpToolForm.addEventListener("submit", (e) => {
+		e.preventDefault();
+		window.setView(
+			parseInt(document.querySelector(".jumpX").value),
+			parseInt(document.querySelector(".jumpY").value)
+		);
+		document.querySelector(".jumpX").value = null;
+		document.querySelector(".jumpY").value = null;
 	});
 }
 
-window.onload = async function startBot() { //when page is done loading, start bot
+window.onload = async function startBot() {
+	//when page is done loading, start bot
 
-	const delay = ms => new Promise(res => setTimeout(res, ms));
+	const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 	await delay(5000);
 
-	fetch("https://veggiebotserver.knobrega.com/designs", {credentials: 'include'}) //fetch processed designs from server
-	.then(response => response.text())
-	.then(result => {
+	fetch("https://veggiebotserver.knobrega.com/designs", {
+		credentials: "include",
+	}) //fetch processed designs from server
+		.then((response) => response.text())
+		.then((result) => {
+			const processedDesignArray = JSON.parse(result); //array of processed design objects
+			const designArray = []; //array of final Design objects
 
-		const processedDesignArray = JSON.parse(result); //array of processed design objects
-		const designArray = []; //array of final Design objects
+			for (const processedDesign of processedDesignArray) {
+				//for each processed design
+				designArray.push(new veggieBot.Design(processedDesign)); //create final Design and push to designArray
+			}
 
-		for (const processedDesign of processedDesignArray) { //for each processed design
-			designArray.push( new veggieBot.Design(processedDesign)); //create final Design and push to designArray
-		}
+			window.designArray = designArray;
+			console.log("Design Array:", designArray);
 
-		window.designArray = designArray;
-		console.log("Design Array:", designArray);
+			veggieBot.pixelTimer(designArray, pixelCallback); //start pixel placement loop
+			displayDesign(designArray[0]);
 
-		veggieBot.pixelTimer(designArray, pixelCallback); //start pixel placement loop
-		displayDesign(designArray[0]);
-		
-		ws = new WebSocket("wss://veggiebotserver.knobrega.com/live");
-		ws.addEventListener("open", event => {
-			ws.send(JSON.stringify({
-				type: "connect",
-				user
-			}))
-		});
+			ws = new WebSocket("wss://veggiebotserver.knobrega.com/live");
+			ws.addEventListener("open", (event) => {
+				ws.send(
+					JSON.stringify({
+						type: "connect",
+						user,
+					})
+				);
+			});
 
-		splash.classList.add("hidden"); //take down loading screen
-		setTimeout(
-			() => {
+			splash.classList.add("hidden"); //take down loading screen
+			setTimeout(() => {
 				window.location.reload();
-			},
-			(60 * 60 * 1000)
-		); //refresh page after 30 mins
-	});
+			}, 60 * 60 * 1000); //refresh page after 30 mins
+		});
 };
 
-
-function displayDesign(design) { //displays a Design in the ui's design inspector
-	document.querySelector('.designName').innerHTML = design.name;
-	document.querySelector('.designCompletion').innerHTML = `Completion: ${(design.width * design.height) - design.incorrectPixels.length} / ${design.width * design.height}`;
-	document.querySelector('.designLocation').innerHTML = `Location: <span class="fakeLink" onclick="window.setView(${design.xCoord}, ${design.yCoord})">(${design.xCoord}, ${design.yCoord})</span>`;
-	document.querySelector('.designDimensions').innerHTML = `Dimensions: ${design.width} × ${design.height}`;
-	document.querySelector('.designSize').innerHTML = `Size: ${design.pixels.length} pixels`;
-	document.querySelector('.designLink').innerHTML = `File: <a href="${design.url}" target="_blank" rel="noopener noreferrer">${design.url.substring(design.url.lastIndexOf('/') + 1)}</a>`;
-	document.querySelector('.designEnabled').innerHTML = `<label for="designEnabledCheckbox">Enabled: </label><input type="checkbox" id="designEnabledCheckbox" checked disabled>`
+function displayDesign(design) {
+	//displays a Design in the ui's design inspector
+	document.querySelector(".designName").innerHTML = design.name;
+	document.querySelector(".designCompletion").innerHTML = `Completion: ${
+		design.width * design.height - design.incorrectPixels.length
+	} / ${design.width * design.height}`;
+	document.querySelector(
+		".designLocation"
+	).innerHTML = `Location: <span class="fakeLink" onclick="window.setView(${design.xCoord}, ${design.yCoord})">(${design.xCoord}, ${design.yCoord})</span>`;
+	document.querySelector(
+		".designDimensions"
+	).innerHTML = `Dimensions: ${design.width} × ${design.height}`;
+	document.querySelector(
+		".designSize"
+	).innerHTML = `Size: ${design.pixels.length} pixels`;
+	document.querySelector(".designLink").innerHTML = `File: <a href="${
+		design.url
+	}" target="_blank" rel="noopener noreferrer">${design.url.substring(
+		design.url.lastIndexOf("/") + 1
+	)}</a>`;
+	document.querySelector(
+		".designEnabled"
+	).innerHTML = `<label for="designEnabledCheckbox">Enabled: </label><input type="checkbox" id="designEnabledCheckbox" checked disabled>`;
 }
 /**
  * Refreshes anything in the UI that changes
@@ -335,8 +358,9 @@ function refreshUI(designArray) {
 			<th style="text-align: right;">Pixels To Do</th>
 		</tr>
 	`;
-	
-	for (const design of designArray) { //for each design
+
+	for (const design of designArray) {
+		//for each design
 		const row = document.createElement("tr");
 		row.classList.add("designTableRow");
 		row.innerHTML = `
@@ -355,11 +379,16 @@ function refreshUI(designArray) {
 	}
 
 	let totalIncorrectPixels = 0;
-	for (const design of designArray) { //for every design
+	for (const design of designArray) {
+		//for every design
 		totalIncorrectPixels += design.incorrectPixels.length; //add this design's incorrect pixels to total incorrect pixel count
 	}
-	document.querySelector(".todoCounter").innerHTML = `Pixels to do: ${totalIncorrectPixels}`; //update pixel todo counter
-	document.querySelector(".pixelsPlaced").innerHTML = `Pixels placed: ${getCookie("pixelCounter") ? getCookie("pixelCounter") : 0}`; //update pixels placed counter
+	document.querySelector(
+		".todoCounter"
+	).innerHTML = `Pixels to do: ${totalIncorrectPixels}`; //update pixel todo counter
+	document.querySelector(".pixelsPlaced").innerHTML = `Pixels placed: ${
+		getCookie("pixelCounter") ? getCookie("pixelCounter") : 0
+	}`; //update pixels placed counter
 }
 /**
  * Returns value of a cookie by name
@@ -369,10 +398,10 @@ function refreshUI(designArray) {
 function getCookie(cname) {
 	let name = cname + "=";
 	let decodedCookie = decodeURIComponent(document.cookie);
-	let ca = decodedCookie.split(';');
+	let ca = decodedCookie.split(";");
 	for (let i = 0; i < ca.length; i++) {
 		let c = ca[i];
-		while (c.charAt(0) == ' ') {
+		while (c.charAt(0) == " ") {
 			c = c.substring(1);
 		}
 		if (c.indexOf(name) == 0) {
@@ -389,19 +418,18 @@ function getCookie(cname) {
  */
 function setCookie(cname, cvalue, exdays) {
 	const d = new Date();
-	d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+	d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
 	let expires = "expires=" + d.toUTCString();
 	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
-function pixelCallback (results) { //runs after each pixel placement attempt
+function pixelCallback(results) {
+	//runs after each pixel placement attempt
 	if (results.successful === true) {
-		const oldCount = parseInt(getCookie("pixelCounter") ? getCookie("pixelCounter") : 0);
-		setCookie(
-			"pixelCounter",
-			(oldCount + 1),
-			3
-		); //update cookie
+		const oldCount = parseInt(
+			getCookie("pixelCounter") ? getCookie("pixelCounter") : 0
+		);
+		setCookie("pixelCounter", oldCount + 1, 3); //update cookie
 	}
 
 	window.setWait(results.waitMS);
@@ -413,13 +441,19 @@ function pixelCallback (results) { //runs after each pixel placement attempt
 	// 	results,
 	// }))
 
-	const p = document.createElement('p')
+	const p = document.createElement("p");
 
 	const now = new Date();
-	const timeString = "[" + now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0') + "]";
+	const timeString =
+		"[" +
+		now.getHours() +
+		":" +
+		now.getMinutes().toString().padStart(2, "0") +
+		":" +
+		now.getSeconds().toString().padStart(2, "0") +
+		"]";
 
 	p.innerHTML = timeString + " " + results.string;
-	document.querySelector('.logScroller').appendChild(p)
+	document.querySelector(".logScroller").appendChild(p);
 	refreshUI(designArray);
-	
 }
