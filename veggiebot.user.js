@@ -45,6 +45,10 @@ const splash = document.createElement("div");
 })();
 
 //global values
+const baseURL =
+	getCookie("dev") === "true"
+		? "https://veggiebotserver-dev.knobrega.com"
+		: "https://veggiebotserver.knobrega.com";
 const botID = getCookie("z")
 	? getCookie("z")
 	: veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
@@ -53,12 +57,12 @@ let user;
 let ws;
 
 //then check if user is authorized
-fetch("https://veggiebotserver.knobrega.com/user", {
+fetch(baseURL + "/user", {
 	credentials: "include",
 }).then((response) => {
 	if (response.status === 401) {
 		//user is not logged in
-		window.location.replace("https://veggiebotserver.knobrega.com/auth/login");
+		window.location.replace(baseURL + "/auth/login");
 	} else if (response.status === 200) {
 		//user is logged in and authorized
 		response.text().then((result) => {
@@ -258,7 +262,7 @@ function buildUI() {
 							<span class="discriminator">#${user.discriminator}</span>
 						</span>
 						<br>
-						<a href="https://veggiebotserver.knobrega.com/auth/logout">Log out</a>
+						<a href="${baseURL}/auth/logout">Log out</a>
 					</div>
 				</div>
 			</div>
@@ -280,47 +284,33 @@ function buildUI() {
 	});
 }
 
+setTimeout(() => {
+	window.location.reload();
+}, 60 * 60 * 1000); //refresh page later
+
 window.onload = async function startBot() {
 	//when page is done loading, start bot
 
-	const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-	await delay(5000);
+	designArray = await veggieBot.fetchDesigns(fetchDesignsCallback);
 
-	fetch("https://veggiebotserver.knobrega.com/designs", {
-		credentials: "include",
-	}) //fetch processed designs from server
-		.then((response) => response.text())
-		.then((result) => {
-			const processedDesignArray = JSON.parse(result); //array of processed design objects
-			const designArray = []; //array of final Design objects
+	ws = new WebSocket("wss://veggiebotserver.knobrega.com/live");
+	ws.addEventListener("open", (event) => {
+		ws.send(
+			JSON.stringify({
+				type: "connect",
+				user,
+			})
+		);
+	});
 
-			for (const processedDesign of processedDesignArray) {
-				//for each processed design
-				designArray.push(new veggieBot.Design(processedDesign)); //create final Design and push to designArray
-			}
-
-			window.designArray = designArray;
-			console.log("Design Array:", designArray);
-
-			veggieBot.pixelTimer(designArray, pixelCallback); //start pixel placement loop
-			displayDesign(designArray[0]);
-
-			ws = new WebSocket("wss://veggiebotserver.knobrega.com/live");
-			ws.addEventListener("open", (event) => {
-				ws.send(
-					JSON.stringify({
-						type: "connect",
-						user,
-					})
-				);
-			});
-
-			splash.classList.add("hidden"); //take down loading screen
-			setTimeout(() => {
-				window.location.reload();
-			}, 60 * 60 * 1000); //refresh page after 30 mins
-		});
+	splash.classList.add("hidden"); //take down loading screen
 };
+
+function fetchDesignsCallback(designArray) {
+	window.designArray = designArray;
+	displayDesign(designArray[0]);
+	veggieBot.pixelTimer(designArray, pixelCallback); //start pixel placement loop
+}
 
 function displayDesign(design) {
 	//displays a Design in the ui's design inspector
@@ -457,3 +447,8 @@ function pixelCallback(results) {
 	document.querySelector(".logScroller").appendChild(p);
 	refreshUI(designArray);
 }
+
+window.toggleDev = () => {
+	setCookie("dev", getCookie("dev") === "true" ? "false" : "true", 10);
+	window.location.reload();
+};
