@@ -316,7 +316,7 @@ function displayDesign(design) {
 	//displays a Design in the ui's design inspector
 	document.querySelector(".designName").innerHTML = design.name;
 	document.querySelector(".designCompletion").innerHTML = `Completion: ${
-		design.completePixels
+		design.width * design.height - design.incorrectPixels.length
 	} / ${design.width * design.height} (${
 		(this.completion * 100).toFixed(2) + "%"
 	})`;
