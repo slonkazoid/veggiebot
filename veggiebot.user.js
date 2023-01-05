@@ -316,8 +316,10 @@ function displayDesign(design) {
 	//displays a Design in the ui's design inspector
 	document.querySelector(".designName").innerHTML = design.name;
 	document.querySelector(".designCompletion").innerHTML = `Completion: ${
-		design.width * design.height - design.incorrectPixels.length
-	} / ${design.width * design.height}`;
+		design.completePixels
+	} / ${design.width * design.height} (${
+		(this.completion * 100).toFixed(2) + "%"
+	})`;
 	document.querySelector(
 		".designLocation"
 	).innerHTML = `Location: <span class="fakeLink" onclick="window.setView(${design.xCoord}, ${design.yCoord})">(${design.xCoord}, ${design.yCoord})</span>`;
