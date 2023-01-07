@@ -9,7 +9,6 @@
 // @updateURL    https://veggiebotserver.knobrega.com/veggiebot.user.js
 // @downloadURL  https://veggiebotserver.knobrega.com/veggiebot.user.js
 // @grant        none
-// @require      https://veggiebotserver.knobrega.com/veggieBotLibrary.js
 // ==/UserScript==
 //jshint esversion: 10
 
@@ -52,6 +51,7 @@ const baseURL =
 const botID = getCookie("z")
 	? getCookie("z")
 	: veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
+const version = GM_info.script.version;
 setCookie("z", botID, 2); //save bot ID to cookie
 let user;
 let ws;
@@ -72,6 +72,15 @@ fetch(baseURL + "/user", {
 		});
 	}
 });
+
+loadLibrary();
+//then load the library
+function loadLibrary() {
+	const library = document.createElement("script");
+	library.src = `${baseURL}/veggieBotLibrary.js`;
+	document.body.appendChild(library);
+}
+
 //then build UI
 function buildUI() {
 	const div = document.createElement("div");
@@ -214,9 +223,7 @@ function buildUI() {
 		</style>
 		<div class="ui">
 			<div class="uiStackTop">
-				<p><span class="appTitle">VeggieBot</span><span class="appVersion">v${
-					GM_info.script.version
-				} · #${botID}</span></p>
+				<p><span class="appTitle">VeggieBot</span><span class="appVersion">v${version} · #${botID}</span></p>
 				<div class="mainStats">
 					<span class="todoCounter"></span>
 					<span class="pixelsPlaced"></span>
@@ -426,7 +433,7 @@ function pixelCallback(results) {
 
 	window.setWait(results.waitMS);
 
-	veggieBot.webhook(results.string);
+	veggieBot.webhook(results.string, user, version, botID);
 	// ws.send(JSON.stringify({
 	// 	type: "pixel",
 	// 	user,
