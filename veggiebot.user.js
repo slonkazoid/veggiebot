@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.11.1
+// @version      3.11.2
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -342,19 +342,21 @@ function displayDesign(design) {
 	//displays a Design in the ui's design inspector
 	document.querySelector(".designName").innerHTML = design.name;
 	document.querySelector(".designCompletion").innerHTML = `Completion: ${
-		design.width * design.height - design.incorrectPixels.length
-	} / ${design.width * design.height} (${
 		(design.completion * 100).toFixed(2) + "%"
-	})`;
+	}`;
 	document.querySelector(
 		".designLocation"
 	).innerHTML = `Location: <span class="fakeLink" onclick="window.setView(${design.xCoord}, ${design.yCoord})">(${design.xCoord}, ${design.yCoord})</span>`;
 	document.querySelector(
 		".designDimensions"
-	).innerHTML = `Dimensions: ${design.width} × ${design.height}`;
+	).innerHTML = `Dimensions: ${Intl.NumberFormat().format(
+		design.width
+	)} × ${Intl.NumberFormat().format(design.height)}`;
 	document.querySelector(
 		".designSize"
-	).innerHTML = `Size: ${design.pixels.length} pixels`;
+	).innerHTML = `Size: ${Intl.NumberFormat().format(
+		design.pixels.length
+	)} pixels`;
 	document.querySelector(".designLink").innerHTML = `File: <a href="${
 		design.url
 	}" target="_blank" rel="noopener noreferrer">${design.url.substring(
@@ -383,7 +385,9 @@ function refreshUI(designArray) {
 		row.classList.add("designTableRow");
 		row.innerHTML = `
 			<td style="padding: 5px; margin-right: 15px;">${design.name}</td>
-			<td style="text-align: right;">${design.incorrectPixels.length}</td>
+			<td style="text-align: right;">${Intl.NumberFormat().format(
+				design.incorrectPixels.length
+			)}</td>
 		`;
 		row.onclick = function () {
 			displayDesign(design);
