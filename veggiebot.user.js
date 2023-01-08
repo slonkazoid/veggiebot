@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.9.0
+// @version      3.10.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -16,6 +16,9 @@
 //issue where pixels are loaded as white when they're out of range
 //issue where the bot doesn't load right after refreshing
 //try increasing time until reload
+//make discord login persist when server restarts or rebuilds
+//detect pixel placement time remaining when the page loads
+//make waitms compatible with wait times longer than 1 minute
 
 const splash = document.createElement("div");
 (function makeLoadingScreen() {
@@ -453,7 +456,10 @@ function pixelCallback(results) {
 		"]";
 
 	p.innerHTML = timeString + " " + results.string;
-	document.querySelector(".logScroller").appendChild(p);
+	const logScroller = document.querySelector(".logScroller");
+	logScroller.appendChild(p);
+	logScroller.scrollTop = logScroller.scrollHeight;
+
 	refreshUI(designArray);
 }
 
