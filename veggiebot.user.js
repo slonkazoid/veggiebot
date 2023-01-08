@@ -344,7 +344,7 @@ function displayDesign(design) {
 	document.querySelector(".designCompletion").innerHTML = `Completion: ${
 		design.width * design.height - design.incorrectPixels.length
 	} / ${design.width * design.height} (${
-		(this.completion * 100).toFixed(2) + "%"
+		(design.completion * 100).toFixed(2) + "%"
 	})`;
 	document.querySelector(
 		".designLocation"
