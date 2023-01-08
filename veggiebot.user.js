@@ -196,7 +196,7 @@ function buildUI() {
 			.user {
 				background: #2b2d32;
 				color:  white;
-				padding: 10px;
+				padding: 15px;
 				border-top: 2px solid #36383f;
 				
 				display: flex;
@@ -278,7 +278,7 @@ function buildUI() {
 				</div>
 			</div>
 			<div class="user">
-				<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${
+				<img class="avatar" style="border-radius: 20%; width: 40px; height: 40px;" src="${
 					user.avatar
 						? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
 						: "https://cdn.discordapp.com/embed/avatars/0.png"
@@ -385,7 +385,7 @@ function refreshUI(designArray) {
 		row.classList.add("designTableRow");
 		row.innerHTML = `
 			<td style="padding: 5px; margin-right: 15px;">${design.name}</td>
-			<td style="text-align: right;">${Intl.NumberFormat().format(
+			<td style="text-align: right; padding: 5px;">${Intl.NumberFormat().format(
 				design.incorrectPixels.length
 			)}</td>
 		`;
