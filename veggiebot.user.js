@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.10.0
+// @version      3.11.0
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -19,6 +19,7 @@
 //make discord login persist when server restarts or rebuilds
 //detect pixel placement time remaining when the page loads
 //make waitms compatible with wait times longer than 1 minute
+//make designs reload every 15 mins
 
 const splash = document.createElement("div");
 (function makeLoadingScreen() {
@@ -87,7 +88,7 @@ function loadLibrary() {
 //then build UI
 function buildUI() {
 	const div = document.createElement("div");
-	div.innerHTML = `
+	div.innerHTML = /*html*/ `
 		<style>
 			.ui {
 				position: absolute;
@@ -116,6 +117,12 @@ function buildUI() {
 				justify-content: flex-end;
 				flex-grow: 1;
 			}
+			.uiTop {
+				background-color: #0c41a0;
+				padding: 15px;
+				color: white;
+				border-bottom: 2px solid #3968bd;
+			}
 			.appTitle {
 				font-size: 1.7em;
 			}
@@ -124,15 +131,15 @@ function buildUI() {
 				padding-left: 10px;
 			}
 			.mainStats {
-				background-color: #0c41a0;
-				padding: 10px;
-				border-radius: 10px;
-				color: white;
-				border: 2px solid #3968bd;
-
+				display: flex;
+				flex-flow: row;
+				gap: 30px;
+				justify-content: center;
+				text-align: center;
+			}
+			.mainStats > div {
 				display: flex;
 				flex-flow: column;
-				gap: 10px;
 			}
 			.infoButton {
 				background-color: #3668ff91;
@@ -165,7 +172,7 @@ function buildUI() {
 				display: inline-block;
 				vertical-align: middle;
 			}
-			.designInfo {
+			.card {
 				background: #2b2d32;
 				color:  white;
 				padding: 10px;
@@ -190,8 +197,7 @@ function buildUI() {
 				background: #2b2d32;
 				color:  white;
 				padding: 10px;
-				border-radius: 10px;
-				border: 2px solid #36383f;
+				border-top: 2px solid #36383f;
 				
 				display: flex;
 				flex-flow: row;
@@ -225,11 +231,21 @@ function buildUI() {
 			}
 		</style>
 		<div class="ui">
-			<div class="uiStackTop">
+			<div class="uiTop">
 				<p><span class="appTitle">VeggieBot</span><span class="appVersion">v${version} · #${botID}</span></p>
-				<div class="mainStats">
-					<span class="todoCounter"></span>
-					<span class="pixelsPlaced"></span>
+			</div>
+			<div class="uiStackTop">
+				<div class="card">
+					<div class="mainStats">
+						<div>
+							<span class="todoCounter" style="font-size: 2em;"></span>
+							<span>Pixels to do</span>
+						</div>
+						<div>
+							<span class="pixelsPlaced" style="font-size: 2em;"></span>
+							<span>Pixels placed</span>
+						</div>
+					</div>
 				</div>
 				<div class="logScroller">
 				</div>
@@ -237,43 +253,43 @@ function buildUI() {
 					<tbody class="designsTable">
 					</tbody>
 				</table>
-				<div class="designInfo">
+				<div class="card">
 					<strong class="designName"></strong>
 					<span class="designCompletion"></span>
 					<span class="designDimensions"></span>
 					<span class="designLocation"></span>
 					<span class="designSize"></span>
 					<span class="designLink"></span>
-					<span class="designEnabled"</span>
+					<span class="designEnabled"></span>
 				</div>
 			</div>
 			<div class="uiStackBottom">
-				<div class="designInfo">
+				<div class="card">
 					<div style="display: flex; flex-direction: column; gap: 5px;">
 						<strong>Jump to location</strong>
 						<form id="jumpForm">
 							<div style="display: flex; flex-direction: row; gap: 8px;">
 								<input class="textInput jumpX" placeholder="x coord" required>
 								<input class="textInput jumpY" placeholder="y coord" required>
-								<input type="submit" value="Go" style="background-color: #3668ff91; padding: 5px 10px; border-radius: 5px; box-shadow: 0px 0px 20px 1px #00000038; transition: box-shadow 0.3s, background 0.3s; ">
+								<input type="submit" value="Go" style="background-color: #3668ff91; padding: 5px 10px; border-radius: 5px; box-shadow: 0px 0px 20px 1px #00000038; transition: box-shadow 0.3s, background 0.3s; cursor: pointer;">
 							</div>
 						</form>
 					</div>
 				</div>
-				<div class="user">
-					<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${
-						user.avatar
-							? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
-							: "https://cdn.discordapp.com/embed/avatars/0.png"
-					}">
-					<div style="display: flex; flex-flow: column; justify-content: center; gap: 1px;">
-						<span>
-							<strong class="username">${user.username}</strong>
-							<span class="discriminator">#${user.discriminator}</span>
-						</span>
-						<br>
-						<a href="${baseURL}/auth/logout">Log out</a>
-					</div>
+			</div>
+			<div class="user">
+				<img class="avatar" style="border-radius: 10px; width: 64px; height: 64px;" src="${
+					user.avatar
+						? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
+						: "https://cdn.discordapp.com/embed/avatars/0.png"
+				}">
+				<div style="display: flex; flex-flow: column; justify-content: center; gap: 1px;">
+					<span>
+						<strong class="username">${user.username}</strong>
+						<span class="discriminator">#${user.discriminator}</span>
+					</span>
+					<br>
+					<a href="${baseURL}/auth/logout">Log out</a>
 				</div>
 			</div>
 		</div>
@@ -385,12 +401,20 @@ function refreshUI(designArray) {
 		//for every design
 		totalIncorrectPixels += design.incorrectPixels.length; //add this design's incorrect pixels to total incorrect pixel count
 	}
-	document.querySelector(
-		".todoCounter"
-	).innerHTML = `Pixels to do: ${totalIncorrectPixels}`; //update pixel todo counter
-	document.querySelector(".pixelsPlaced").innerHTML = `Pixels placed: ${
-		getCookie("pixelCounter") ? getCookie("pixelCounter") : 0
-	}`; //update pixels placed counter
+	const todoCounter = document.querySelector(".todoCounter");
+	todoCounter.innerHTML = Intl.NumberFormat("en-US", {
+		notation: "compact",
+		maximumFractionDigits: 1,
+	}).format(totalIncorrectPixels); //update pixel todo counter
+	todoCounter.title = totalIncorrectPixels;
+	const pixelsPlaced = document.querySelector(".pixelsPlaced");
+	pixelsPlaced.innerHTML = Intl.NumberFormat("en-US", {
+		notation: "compact",
+		maximumFractionDigits: 1,
+	}).format(getCookie("pixelCounter") ? getCookie("pixelCounter") : 0); //update pixels placed counter
+	pixelsPlaced.title = getCookie("pixelCounter")
+		? getCookie("pixelCounter")
+		: 0;
 }
 /**
  * Returns value of a cookie by name
