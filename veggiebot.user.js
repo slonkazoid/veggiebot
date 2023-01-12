@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.11.3
+// @version      3.11.4
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -18,32 +18,6 @@
 //detect pixel placement time remaining when the page loads
 //make waitms compatible with wait times longer than 1 minute
 //make designs reload every 15 mins
-
-const splash = document.createElement("div");
-(function makeLoadingScreen() {
-	//build and display loading screen
-	splash.style = `
-		position: absolute;
-		z-index: 999;
-		width: 100vw;
-		height: 100vh;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		transition: all 1s;
-		background: rgba(0, 0, 0, 0.7);
-		backdrop-filter: blur(10.5px);
-		color:white;
-		-webkit-backdrop-filter: blur(10.5px);
-		font-family: monospace;
-	`;
-	splash.innerHTML = `
-		<h1 style="font-size: 2rem;">Loading VeggieBot...</h1>
-	`;
-	splash.classList.add("hidden");
-	document.body.appendChild(splash);
-	splash.classList.remove("hidden"); //fade in
-})();
 
 //global values
 const baseURL =
@@ -76,13 +50,10 @@ fetch(baseURL + "/user", {
 	}
 });
 
-loadLibrary();
 //then load the library
-function loadLibrary() {
-	const library = document.createElement("script");
-	library.src = `${baseURL}/veggieBotLibrary.js`;
-	document.body.appendChild(library);
-}
+const library = document.createElement("script");
+library.src = `${baseURL}/veggieBotLibrary.js`;
+document.body.appendChild(library);
 
 //then build UI
 function buildUI() {
@@ -102,6 +73,13 @@ function buildUI() {
 				max-width: 340px;
 				overflow: scroll;
 			}
+			.uiTop {
+				background-color: ${getCookie("dev") === "true" ? "#ffe300" : "#0c41a0"};
+				color: ${getCookie("dev") === "true" ? "black" : "white"};
+				
+				padding: 15px;
+				border-bottom: 2px solid #3968bd;
+			}
 			.uiStackTop {
 				display: flex;
 				flex-flow: column;
@@ -116,18 +94,9 @@ function buildUI() {
 				justify-content: flex-end;
 				flex-grow: 1;
 			}
-			.uiTop {
-				background-color: #0c41a0;
-				padding: 15px;
-				color: white;
-				border-bottom: 2px solid #3968bd;
-			}
 			.appTitle {
 				font-size: 1.7em;
-			}
-			.appVersion {
-				color: #eeeeee;
-				padding-left: 10px;
+				padding-right: 10px;
 			}
 			.mainStats {
 				display: flex;
@@ -138,37 +107,6 @@ function buildUI() {
 			.mainStats > div {
 				display: flex;
 				flex-flow: column;
-			}
-			.infoButton {
-				background-color: #3668ff91;
-				padding: 10px;
-				border-radius: 6px;
-				margin-top: 15px;
-				box-shadow: 0px 0px 20px 1px #00000038;
-				transition: box-shadow 0.3s, background 0.3s;
-			}
-			.infoButton:hover {
-				box-shadow: 0px 0px 20px 8px #0000005a;
-				background-color: #3668ffa3;
-			}
-			.hidden {
-				opacity: 0%;
-				visibility: hidden;
-			}
-			.inlineCode {
-				background-color: #222222;
-				color: white;
-				display: inline-block;
-				vertical-align: middle;
-				border-radius: 4px;
-				padding: 0 5px;
-			}
-			.pixel {
-				width: 1rem;
-				height: 1rem;
-				background-color: red;
-				display: inline-block;
-				vertical-align: middle;
 			}
 			.card {
 				background: #2b2d32;
@@ -254,11 +192,7 @@ function buildUI() {
 				<div class="card">
 					<strong class="designName"></strong>
 					<span class="designCompletion"></span>
-					<span class="designDimensions"></span>
 					<span class="designLocation"></span>
-					<span class="designSize"></span>
-					<span class="designLink"></span>
-					<span class="designEnabled"></span>
 				</div>
 			</div>
 			<div class="uiStackBottom">
@@ -294,7 +228,6 @@ function buildUI() {
 	`;
 	document.body.appendChild(div);
 
-	//TOOLS
 	//jump
 	jumpToolForm = document.querySelector("#jumpForm");
 	jumpToolForm.addEventListener("submit", (e) => {
@@ -326,8 +259,6 @@ window.onload = async function startBot() {
 			})
 		);
 	});
-
-	splash.classList.add("hidden"); //take down loading screen
 };
 
 function fetchDesignsCallback(designArray) {
@@ -345,21 +276,6 @@ function displayDesign(design) {
 	document.querySelector(
 		".designLocation"
 	).innerHTML = `Location: <span class="fakeLink" onclick="window.setView(${design.xCoord}, ${design.yCoord})">(${design.xCoord}, ${design.yCoord})</span>`;
-	document.querySelector(
-		".designDimensions"
-	).innerHTML = `Dimensions: ${Intl.NumberFormat().format(
-		design.width
-	)} × ${Intl.NumberFormat().format(design.height)}`;
-	document.querySelector(
-		".designSize"
-	).innerHTML = `Size: ${Intl.NumberFormat().format(
-		design.pixels.length
-	)} pixels`;
-	document.querySelector(".designLink").innerHTML = `File: <a href="${
-		design.url
-	}" target="_blank" rel="noopener noreferrer">${design.url.substring(
-		design.url.lastIndexOf("/") + 1
-	)}</a>`;
 }
 /**
  * Refreshes anything in the UI that changes
