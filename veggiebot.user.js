@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.11.2
+// @version      3.11.3
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -10,11 +10,9 @@
 // @downloadURL  https://veggiebotserver.knobrega.com/veggiebot.user.js
 // @grant        none
 // ==/UserScript==
-//jshint esversion: 10
 
 // TO DO:
 //issue where pixels are loaded as white when they're out of range
-//issue where the bot doesn't load right after refreshing
 //try increasing time until reload
 //make discord login persist when server restarts or rebuilds
 //detect pixel placement time remaining when the page loads
@@ -52,6 +50,7 @@ const baseURL =
 	getCookie("dev") === "true"
 		? "https://veggiebotserver-dev.knobrega.com"
 		: "https://veggiebotserver.knobrega.com";
+window.baseURL = baseURL;
 const botID = getCookie("z")
 	? getCookie("z")
 	: veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
@@ -99,7 +98,7 @@ function buildUI() {
 				height: 100%;
 				background: #202123;
 				color:white;
-				font-size: 12px;
+				font-size: 0.75rem;
 				max-width: 340px;
 				overflow: scroll;
 			}
@@ -133,8 +132,7 @@ function buildUI() {
 			.mainStats {
 				display: flex;
 				flex-flow: row;
-				gap: 30px;
-				justify-content: center;
+				justify-content: space-evenly;
 				text-align: center;
 			}
 			.mainStats > div {
@@ -271,7 +269,7 @@ function buildUI() {
 							<div style="display: flex; flex-direction: row; gap: 8px;">
 								<input class="textInput jumpX" placeholder="x coord" required>
 								<input class="textInput jumpY" placeholder="y coord" required>
-								<input type="submit" value="Go" style="background-color: #3668ff91; padding: 5px 10px; border-radius: 5px; box-shadow: 0px 0px 20px 1px #00000038; transition: box-shadow 0.3s, background 0.3s; cursor: pointer;">
+								<input type="submit" value="Go" style="background-color: #0e4ec1; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
 							</div>
 						</form>
 					</div>
@@ -362,9 +360,6 @@ function displayDesign(design) {
 	}" target="_blank" rel="noopener noreferrer">${design.url.substring(
 		design.url.lastIndexOf("/") + 1
 	)}</a>`;
-	document.querySelector(
-		".designEnabled"
-	).innerHTML = `<label for="designEnabledCheckbox">Enabled: </label><input type="checkbox" id="designEnabledCheckbox" checked disabled>`;
 }
 /**
  * Refreshes anything in the UI that changes
@@ -464,7 +459,7 @@ function pixelCallback(results) {
 
 	window.setWait(results.waitMS);
 
-	veggieBot.webhook(results.string, user, version, botID);
+	veggieBot.webhook(results.string, user, version, botID, !results.successful);
 	// ws.send(JSON.stringify({
 	// 	type: "pixel",
 	// 	user,
