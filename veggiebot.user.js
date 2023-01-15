@@ -59,11 +59,6 @@ fetch(baseURL + "/user", {
 	}
 });
 
-//then load the library
-const library = document.createElement("script");
-library.src = `${baseURL}/veggieBotLibrary.js`;
-document.body.appendChild(library);
-
 //then build UI
 function buildUI() {
 	const div = document.createElement("div");
