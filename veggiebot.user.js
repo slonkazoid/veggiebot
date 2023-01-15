@@ -33,6 +33,10 @@ setCookie("z", botID, 2); //save bot ID to cookie
 let user;
 let ws;
 
+window.addEventListener("bundleJSLoaded", (event) => {
+	console.log("got event!");
+});
+
 //then check if user is authorized
 fetch(baseURL + "/user", {
 	credentials: "include",
