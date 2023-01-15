@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.11.4
+// @version      3.11.5
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -18,6 +18,11 @@
 //detect pixel placement time remaining when the page loads
 //make waitms compatible with wait times longer than 1 minute
 //make designs reload every 15 mins
+
+// load the library
+const library = document.createElement("script");
+library.src = `${baseURL}/veggieBotLibrary.js`;
+document.body.appendChild(library);
 
 //global values
 const baseURL =
