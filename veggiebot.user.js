@@ -19,17 +19,18 @@
 //make waitms compatible with wait times longer than 1 minute
 //make designs reload every 15 mins
 
+const baseURL =
+	getCookie("dev") === "true"
+		? "https://veggiebotserver-dev.knobrega.com"
+		: "https://veggiebotserver.knobrega.com";
+window.baseURL = baseURL;
+
 // load the library
 const library = document.createElement("script");
 library.src = `${baseURL}/veggieBotLibrary.js`;
 document.body.appendChild(library);
 
 //global values
-const baseURL =
-	getCookie("dev") === "true"
-		? "https://veggiebotserver-dev.knobrega.com"
-		: "https://veggiebotserver.knobrega.com";
-window.baseURL = baseURL;
 const botID = getCookie("z")
 	? getCookie("z")
 	: veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
