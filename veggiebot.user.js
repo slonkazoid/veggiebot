@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.11.5
+// @version      3.11.6
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -44,7 +44,7 @@ window.addEventListener("bundleJSLoaded", (event) => {
 });
 
 //then check if user is authorized
-fetch(baseURL + "/user", {
+fetch(baseURL + "/auth/user", {
 	credentials: "include",
 }).then((response) => {
 	if (response.status === 401) {
