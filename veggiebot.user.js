@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VeggieBot
 // @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.11.6
+// @version      3.11.7
 // @description  Bot for vegan banners on pixelcanvas.io
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
@@ -33,15 +33,11 @@ document.body.appendChild(library);
 //global values
 const botID = getCookie("z")
 	? getCookie("z")
-	: veggieBot.randomInteger(10000, 99999); //if cookie exists, get botID from there. otherwise create new ID.
+	: Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000; //if cookie exists, get botID from there. otherwise create new ID.
 const version = GM_info.script.version;
 setCookie("z", botID, 2); //save bot ID to cookie
 let user;
 let ws;
-
-window.addEventListener("bundleJSLoaded", (event) => {
-	console.log("got event!");
-});
 
 //then check if user is authorized
 fetch(baseURL + "/auth/user", {
