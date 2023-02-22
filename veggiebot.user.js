@@ -1,8 +1,6 @@
 // ==UserScript==
 // @name         VeggieBot
-// @namespace    https://discord.gg/grHtzeRFAf
-// @version      3.11.7
-// @description  Bot for vegan banners on pixelcanvas.io
+// @version      3.11.8
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
@@ -60,10 +58,17 @@ fetch(baseURL + "/auth/user", {
 function buildUI() {
 	const div = document.createElement("div");
 	div.innerHTML = /*html*/ `
+		
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Chivo+Mono&family=Lexend+Deca&family=Nunito&display=swap"
+			rel="stylesheet"
+		/>
 		<style>
 			.ui {
 				position: absolute;
-				font-family: monospace;
+				font-family: "Nunito", sans-serif;
 				display: flex;
 				flex-direction: column;
 
@@ -77,6 +82,7 @@ function buildUI() {
 			.uiTop {
 				background-color: ${getCookie("dev") === "true" ? "#ffe300" : "#0c41a0"};
 				color: ${getCookie("dev") === "true" ? "black" : "white"};
+				font-family: "Lexend Deca", sans-serif;
 				
 				padding: 15px;
 				border-bottom: 2px solid #3968bd;
@@ -175,11 +181,11 @@ function buildUI() {
 				<div class="card">
 					<div class="mainStats">
 						<div>
-							<span class="todoCounter" style="font-size: 2em;"></span>
+							<span class="todoCounter" style="font-size: 2em; font-family: 'Lexend Deca', sans-serif;"></span>
 							<span>Pixels to do</span>
 						</div>
 						<div>
-							<span class="pixelsPlaced" style="font-size: 2em;"></span>
+							<span class="pixelsPlaced" style="font-size: 2em; font-family: 'Lexend Deca', sans-serif;"></span>
 							<span>Pixels placed</span>
 						</div>
 					</div>
@@ -208,6 +214,9 @@ function buildUI() {
 							</div>
 						</form>
 					</div>
+				</div>
+				<div class="card">
+					<a href="${baseURL}"><strong>Dashboard</strong></a>
 				</div>
 			</div>
 			<div class="user">
@@ -285,7 +294,7 @@ function displayDesign(design) {
 function refreshUI(designArray) {
 	const designsTable = document.querySelector(".designsTable");
 	designsTable.innerHTML = `
-		<tr>
+		<tr style="font-family: 'Lexend Deca', sans-serif;">
 			<th style="text-align: left;">Design</th>
 			<th style="text-align: right;">Pixels To Do</th>
 		</tr>
