@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      3.11.8
+// @version      3.11.9
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
@@ -9,7 +9,7 @@
 // @grant        none
 // ==/UserScript==
 
-// TO DO:
+// TODO:
 //issue where pixels are loaded as white when they're out of range
 //try increasing time until reload
 //make discord login persist when server restarts or rebuilds
@@ -126,6 +126,7 @@ function buildUI() {
 				flex-flow: column;
 				gap: 10px;
 			}
+			/*
 			.designTableRow {
 				border-top: 1px solid #666;
 			}
@@ -136,6 +137,7 @@ function buildUI() {
 			.active {
 				background-color: #0c41a0 !important;
 			}
+			*/
 			.user {
 				background: #2b2d32;
 				color:  white;
@@ -180,10 +182,10 @@ function buildUI() {
 			<div class="uiStackTop">
 				<div class="card">
 					<div class="mainStats">
-						<div>
+						<!--<div>
 							<span class="todoCounter" style="font-size: 2em; font-family: 'Lexend Deca', sans-serif;"></span>
 							<span>Pixels to do</span>
-						</div>
+						</div>-->
 						<div>
 							<span class="pixelsPlaced" style="font-size: 2em; font-family: 'Lexend Deca', sans-serif;"></span>
 							<span>Pixels placed</span>
@@ -192,6 +194,7 @@ function buildUI() {
 				</div>
 				<div class="logScroller">
 				</div>
+				<!--
 				<table>
 					<tbody class="designsTable">
 					</tbody>
@@ -201,6 +204,7 @@ function buildUI() {
 					<span class="designCompletion"></span>
 					<span class="designLocation"></span>
 				</div>
+				-->
 			</div>
 			<div class="uiStackBottom">
 				<div class="card">
@@ -273,65 +277,66 @@ window.onload = async function startBot() {
 
 function fetchDesignsCallback(designArray) {
 	window.designArray = designArray;
-	displayDesign(designArray[0]);
+	// displayDesign(designArray[0]);
 	veggieBot.pixelTimer(designArray, pixelCallback); //start pixel placement loop
 }
 
-function displayDesign(design) {
-	//displays a Design in the ui's design inspector
-	document.querySelector(".designName").innerHTML = design.name;
-	document.querySelector(".designCompletion").innerHTML = `Completion: ${
-		(design.completion * 100).toFixed(2) + "%"
-	}`;
-	document.querySelector(
-		".designLocation"
-	).innerHTML = `Location: <span class="fakeLink" onclick="window.setView(${design.xCoord}, ${design.yCoord})">(${design.xCoord}, ${design.yCoord})</span>`;
-}
+// function displayDesign(design) {
+// 	//displays a Design in the ui's design inspector
+// 	document.querySelector(".designName").innerHTML = design.name;
+// 	document.querySelector(".designCompletion").innerHTML = `Completion: ${
+// 		(design.completion * 100).toFixed(2) + "%"
+// 	}`;
+// 	document.querySelector(
+// 		".designLocation"
+// 	).innerHTML = `Location: <span class="fakeLink" onclick="window.setView(${design.xCoord}, ${design.yCoord})">(${design.xCoord}, ${design.yCoord})</span>`;
+// }
+
 /**
  * Refreshes anything in the UI that changes
  * @param {*} designArray TODO fix this
  */
 function refreshUI(designArray) {
-	const designsTable = document.querySelector(".designsTable");
-	designsTable.innerHTML = `
-		<tr style="font-family: 'Lexend Deca', sans-serif;">
-			<th style="text-align: left;">Design</th>
-			<th style="text-align: right;">Pixels To Do</th>
-		</tr>
-	`;
+	// const designsTable = document.querySelector(".designsTable");
+	// designsTable.innerHTML = `
+	// 	<tr style="font-family: 'Lexend Deca', sans-serif;">
+	// 		<th style="text-align: left;">Design</th>
+	// 		<th style="text-align: right;">Pixels To Do</th>
+	// 	</tr>
+	// `;
 
-	for (const design of designArray) {
-		//for each design
-		const row = document.createElement("tr");
-		row.classList.add("designTableRow");
-		row.innerHTML = `
-			<td style="padding: 5px; margin-right: 15px;">${design.name}</td>
-			<td style="text-align: right; padding: 5px;">${Intl.NumberFormat().format(
-				design.incorrectPixels.length
-			)}</td>
-		`;
-		row.onclick = function () {
-			displayDesign(design);
-			if (document.querySelector(".active")) {
-				document.querySelector(".active").classList.remove("active");
-			}
+	// for (const design of designArray) {
+	// 	//for each design
+	// 	const row = document.createElement("tr");
+	// 	row.classList.add("designTableRow");
+	// 	row.innerHTML = `
+	// 		<td style="padding: 5px; margin-right: 15px;">${design.name}</td>
+	// 		<td style="text-align: right; padding: 5px;">${Intl.NumberFormat().format(
+	// 			design.incorrectPixels.length
+	// 		)}</td>
+	// 	`;
+	// 	row.onclick = function () {
+	// 		displayDesign(design);
+	// 		if (document.querySelector(".active")) {
+	// 			document.querySelector(".active").classList.remove("active");
+	// 		}
 
-			this.classList.add("active");
-		};
-		designsTable.appendChild(row);
-	}
+	// 		this.classList.add("active");
+	// 	};
+	// 	designsTable.appendChild(row);
+	// }
 
-	let totalIncorrectPixels = 0;
-	for (const design of designArray) {
-		//for every design
-		totalIncorrectPixels += design.incorrectPixels.length; //add this design's incorrect pixels to total incorrect pixel count
-	}
-	const todoCounter = document.querySelector(".todoCounter");
-	todoCounter.innerHTML = Intl.NumberFormat("en-US", {
-		notation: "compact",
-		maximumFractionDigits: 1,
-	}).format(totalIncorrectPixels); //update pixel todo counter
-	todoCounter.title = totalIncorrectPixels;
+	// let totalIncorrectPixels = 0;
+	// for (const design of designArray) {
+	// 	//for every design
+	// 	totalIncorrectPixels += design.incorrectPixels.length; //add this design's incorrect pixels to total incorrect pixel count
+	// }
+	// const todoCounter = document.querySelector(".todoCounter");
+	// todoCounter.innerHTML = Intl.NumberFormat("en-US", {
+	// 	notation: "compact",
+	// 	maximumFractionDigits: 1,
+	// }).format(totalIncorrectPixels); //update pixel todo counter
+	// todoCounter.title = totalIncorrectPixels;
 	const pixelsPlaced = document.querySelector(".pixelsPlaced");
 	pixelsPlaced.innerHTML = Intl.NumberFormat("en-US", {
 		notation: "compact",
