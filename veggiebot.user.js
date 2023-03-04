@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      4.0
+// @version      4.1.0
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
@@ -8,6 +8,10 @@
 // @downloadURL  https://veggiebotserver.knobrega.com/veggiebot.user.js
 // @grant        none
 // ==/UserScript==
+
+setTimeout(() => {
+	window.location.reload();
+}, 60 * 60 * 1000); //refresh page after 1 hour
 
 const baseURL =
 	getCookie("dev") === "true"
@@ -223,10 +227,6 @@ function buildUI() {
 		document.querySelector(".jumpY").value = null;
 	});
 }
-
-setTimeout(() => {
-	window.location.reload();
-}, 60 * 60 * 1000); //refresh page later
 
 window.onload = async function startBot() {
 	//when page is done loading, start bot
