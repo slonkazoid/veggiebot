@@ -25,9 +25,8 @@ library.src = `${baseURL}/veggieBotLibrary.js`;
 document.body.appendChild(library);
 
 //global values
-const botID = getCookie("z")
-	? getCookie("z")
-	: Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000; //if cookie exists, get botID from there. otherwise create new ID.
+const botID =
+	getCookie("z") ?? Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000; //if cookie exists, get botID from there. otherwise create new ID.
 const version = GM_info.script.version;
 setCookie("z", botID, 2); //save bot ID to cookie
 let user;
@@ -276,7 +275,7 @@ window.onload = async function startBot() {
 function refreshUI() {
 	const pixelsPlaced = document.querySelector(".pixelsPlaced");
 	pixelsPlaced.innerHTML = Intl.NumberFormat().format(
-		getCookie("pixelCounter") ? getCookie("pixelCounter") : 0
+		getCookie("pixelCounter") ?? 0
 	);
 }
 /**
@@ -315,9 +314,7 @@ function setCookie(cname, cvalue, exdays) {
 function pixelCallback(results) {
 	//runs after each pixel placement attempt
 	if (results.successful === true) {
-		const oldCount = parseInt(
-			getCookie("pixelCounter") ? getCookie("pixelCounter") : 0
-		);
+		const oldCount = parseInt(getCookie("pixelCounter") ?? 0);
 		setCookie("pixelCounter", oldCount + 1, 3); //update cookie
 	}
 
