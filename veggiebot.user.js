@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      4.1.0
+// @version      5.0.0
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
@@ -52,7 +52,15 @@ fetch(baseURL + "/auth/user", {
 
 //then build UI
 function buildUI() {
+	//load fontawesome
+	const iconScript = document.createElement("script");
+	iconScript.src = "https://kit.fontawesome.com/5f09e108f6.js";
+	iconScript.crossOrigin = "anonymous";
+	document.body.appendChild(iconScript);
+
 	const div = document.createElement("div");
+	div.classList.add("veggieBot");
+
 	div.innerHTML = /*html*/ `
 		
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -62,18 +70,21 @@ function buildUI() {
 			rel="stylesheet"
 		/>
 		<style>
-			.ui {
-				position: absolute;
+			.veggieBot {
 				font-family: "Nunito", sans-serif;
+				color: white;
+				font-size: 0.75rem;
+			}
+			.sidebar {
+				position: absolute;
+				height: 100%;
+				width: 86px;
+				overflow: scroll;
+
 				display: flex;
 				flex-direction: column;
 
-				height: 100%;
 				background: #202123;
-				color:white;
-				font-size: 0.75rem;
-				max-width: 340px;
-				overflow: scroll;
 			}
 			.uiTop {
 				background-color: ${getCookie("dev") === "true" ? "#ffe300" : "#0c41a0"};
@@ -88,28 +99,7 @@ function buildUI() {
 				flex-flow: column;
 				gap: 15px;
 				padding: 15px;
-			}
-			.uiStackBottom {
-				display: flex;
-				flex-flow: column;
-				gap: 15px;
-				padding: 15px;
-				justify-content: flex-end;
-				flex-grow: 1;
-			}
-			.appTitle {
-				font-size: 1.7em;
-				padding-right: 10px;
-			}
-			.mainStats {
-				display: flex;
-				flex-flow: row;
-				justify-content: space-evenly;
-				text-align: center;
-			}
-			.mainStats > div {
-				display: flex;
-				flex-flow: column;
+				height: 100%;
 			}
 			.card {
 				background: #2b2d32;
@@ -132,20 +122,15 @@ function buildUI() {
 				flex-flow: row;
 				gap: 10px;
 			}
-			a, .fakeLink {
-				text-decoration: underline;
-				text-decoration-color: #1e58c0;
-				text-decoration-thickness: 2px;
-				cursor: pointer;
-			}
 			.logScroller {
 				background-color: black;
 				border-radius: 10px;
 				border: 2px solid #333;
 				overflow: scroll;
-				height: 10em;
 				padding: 10px;
 				white-space: nowrap;
+				color: white;
+				font-family: monospace;
 			}
 			#gameWindow + div + div {
 				width: 100px;
@@ -158,58 +143,81 @@ function buildUI() {
 				min-width: 0;
 				padding-left: 5px;
 			}
+			.navIcon {
+				font-size: 2rem;
+				display: block;
+			}
+			.modalContainer {
+				background-color: #0005;
+				backdrop-filter: blur(4px);
+
+				position: fixed;
+				height: 100vh;
+				width: 100vw;
+				z-index: 1;
+
+				visibility: hidden;
+				
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
 		</style>
-		<div class="ui">
-			<div class="uiTop">
-				<p><span class="appTitle">VeggieBot</span><span class="appVersion">v${version} · #${botID}</span></p>
-			</div>
-			<div class="uiStackTop">
-				<div class="card">
-					<div class="mainStats">
-						<!--<div>
-							<span class="todoCounter" style="font-size: 2em; font-family: 'Lexend Deca', sans-serif;"></span>
-							<span>Pixels to do</span>
-						</div>-->
-						<div>
-							<span class="pixelsPlaced" style="font-size: 2em; font-family: 'Lexend Deca', sans-serif;"></span>
-							<span>Pixels placed</span>
+
+		<div class="modalContainer jumpTool">
+			<div class="card">
+				<div style="display: flex; flex-direction: column; gap: 5px;">
+					<strong>Jump to location</strong>
+					<form id="jumpForm">
+						<div style="display: flex; flex-direction: column; gap: 8px;">
+							<input class="textInput jumpX" placeholder="x coord" required>
+							<input class="textInput jumpY" placeholder="y coord" required>
+							<input type="submit" value="Go" style="background-color: #0e4ec1; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
 						</div>
-					</div>
-				</div>
-				<div class="logScroller">
+					</form>
 				</div>
 			</div>
-			<div class="uiStackBottom">
-				<div class="card">
-					<div style="display: flex; flex-direction: column; gap: 5px;">
-						<strong>Jump to location</strong>
-						<form id="jumpForm">
-							<div style="display: flex; flex-direction: row; gap: 8px;">
-								<input class="textInput jumpX" placeholder="x coord" required>
-								<input class="textInput jumpY" placeholder="y coord" required>
-								<input type="submit" value="Go" style="background-color: #0e4ec1; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-							</div>
-						</form>
-					</div>
-				</div>
-				<div class="card">
-					<a href="${baseURL}"><strong>Dashboard</strong></a>
-				</div>
-			</div>
-			<div class="user">
-				<img class="avatar" style="border-radius: 20%; width: 40px; height: 40px;" src="${
+		</div>
+		<div class="modalContainer user">
+			<div class="card">
+				<img style="border-radius: 10px; width: 40px; height: 40px;" src="${
 					user.avatar
 						? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
 						: "https://cdn.discordapp.com/embed/avatars/0.png"
 				}">
-				<div style="display: flex; flex-flow: column; justify-content: center; gap: 1px;">
-					<span>
-						<strong class="username">${user.username}</strong>
-						<span class="discriminator">#${user.discriminator}</span>
-					</span>
-					<br>
-					<a href="${baseURL}/auth/logout">Log out</a>
+				<a href="${baseURL}/auth/logout">Log out</a>
+				<span class="appVersion">v${version} · #${botID}</span>
+			</div>
+		</div>
+		<div class="modalContainer log">
+			<div class="logScroller">
+			</div>
+		</div>
+
+		<div class="sidebar">
+			<div class="uiTop">
+				<img src="https://veggiebotserver.knobrega.com/logo-primary.png">
+			</div>
+			<div class="uiStackTop">
+				<div class="card logIcon" style="cursor: pointer;">
+					<i class="fa-solid fa-list-ul navIcon"></i>
 				</div>
+				<div class="card jumpToolIcon" style="cursor: pointer;">
+					<i class="fa-solid fa-compass navIcon"></i>
+				</div>
+				<a href="${baseURL}">
+					<div class="card">
+						<i class="fa-solid fa-chart-column navIcon"></i>
+					</div>
+				</a>
+			</div>
+			<span style="transform: rotate(270deg); font-family: 'Lexend Deca'; font-size: 1.7rem; margin-bottom: 50px; white-space: nowrap;"><span class="pixelsPlaced">0</span> pixels placed</span>
+			<div class="user">
+				<img class="avatar" style="border-radius: 10px" src="${
+					user.avatar
+						? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
+						: "https://cdn.discordapp.com/embed/avatars/0.png"
+				}">
 			</div>
 		</div>
 	`;
@@ -226,6 +234,27 @@ function buildUI() {
 		document.querySelector(".jumpX").value = null;
 		document.querySelector(".jumpY").value = null;
 	});
+
+	document.querySelector(".jumpToolIcon").onclick = () => {
+		document.querySelector(".jumpTool").style.visibility = "visible";
+	};
+	document.querySelector(".jumpTool").onclick = () => {
+		document.querySelector(".jumpTool").style.visibility = "hidden";
+	};
+
+	document.querySelector(".logIcon").onclick = () => {
+		document.querySelector(".log").style.visibility = "visible";
+	};
+	document.querySelector(".log").onclick = () => {
+		document.querySelector(".log").style.visibility = "hidden";
+	};
+
+	document.querySelector(".avatar").onclick = () => {
+		document.querySelector(".user").style.visibility = "visible";
+	};
+	document.querySelector(".user").onclick = () => {
+		document.querySelector(".user").style.visibility = "hidden";
+	};
 }
 
 window.onload = async function startBot() {
@@ -246,13 +275,9 @@ window.onload = async function startBot() {
 
 function refreshUI() {
 	const pixelsPlaced = document.querySelector(".pixelsPlaced");
-	pixelsPlaced.innerHTML = Intl.NumberFormat("en-US", {
-		notation: "compact",
-		maximumFractionDigits: 1,
-	}).format(getCookie("pixelCounter") ? getCookie("pixelCounter") : 0); //update pixels placed counter
-	pixelsPlaced.title = getCookie("pixelCounter")
-		? getCookie("pixelCounter")
-		: 0;
+	pixelsPlaced.innerHTML = Intl.NumberFormat().format(
+		getCookie("pixelCounter") ? getCookie("pixelCounter") : 0
+	);
 }
 /**
  * Returns value of a cookie by name
