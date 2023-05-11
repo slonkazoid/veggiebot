@@ -20,6 +20,7 @@ const baseURL =
 window.baseURL = baseURL;
 
 // load the library
+//TODO load dynamically. wait for library to load and handle error if it doesn't load.
 const library = document.createElement("script");
 library.src = `${baseURL}/veggieBotLibrary.js`;
 document.body.appendChild(library);
@@ -28,25 +29,30 @@ document.body.appendChild(library);
 const botID =
 	getCookie("z") || Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000; //if cookie exists, get botID from there. otherwise create new ID.
 const version = GM_info.script.version;
-setCookie("z", botID, 2); //save bot ID to cookie
+setCookie("z", botID, 30); //save bot ID to cookie
 let user;
-let ws;
 
-//then check if user is authorized
+//check if user is authorized
 fetch(baseURL + "/auth/user", {
 	credentials: "include",
 }).then((response) => {
 	if (response.status === 401) {
 		//user is not logged in
 		window.location.replace(baseURL + "/auth/login");
-	} else if (response.status === 200) {
+		return;
+	}
+
+	if (response.status === 200) {
 		//user is logged in and authorized
 		response.text().then((result) => {
 			//pull out text
 			user = JSON.parse(result); //convert text to json
 			buildUI();
 		});
+		return;
 	}
+
+	alert("unexpected response recieved from veggiebotserver user endpoint");
 });
 
 //then build UI
@@ -140,30 +146,22 @@ function buildUI() {
 				border-radius: 4px;
 				border: 2px solid #36383f;
 				min-width: 0;
-				padding-left: 5px;
+				padding: 3px 7px;
 			}
 			.navIcon {
 				font-size: 2rem;
 				display: block;
 			}
-			.modalContainer {
-				background-color: #0005;
-				backdrop-filter: blur(4px);
-
-				position: fixed;
-				height: 100vh;
-				width: 100vw;
-				z-index: 1;
-
-				visibility: hidden;
-				
-				display: flex;
-				align-items: center;
-				justify-content: center;
+			dialog {
+				background: none;
 			}
+			dialog::backdrop {
+				background-color: #000a;
+			}
+
 		</style>
 
-		<div class="modalContainer jumpTool">
+		<dialog class="jumpTool">
 			<div class="card">
 				<div style="display: flex; flex-direction: column; gap: 5px;">
 					<strong>Jump to location</strong>
@@ -176,8 +174,9 @@ function buildUI() {
 					</form>
 				</div>
 			</div>
-		</div>
-		<div class="modalContainer user">
+		</dialog>
+
+		<dialog class="userModal">
 			<div class="card">
 				<img style="border-radius: 10px; width: 40px; height: 40px;" src="${
 					user.avatar
@@ -187,11 +186,10 @@ function buildUI() {
 				<a href="${baseURL}/auth/logout">Log out</a>
 				<span class="appVersion">v${version} · #${botID}</span>
 			</div>
-		</div>
-		<div class="modalContainer log">
-			<div class="logScroller">
-			</div>
-		</div>
+		</dialog>
+
+		<dialog class="log logScroller">
+		</dialog>
 
 		<div class="sidebar">
 			<div class="uiTop">
@@ -232,44 +230,24 @@ function buildUI() {
 		);
 		document.querySelector(".jumpX").value = null;
 		document.querySelector(".jumpY").value = null;
+		document.querySelector(".jumpTool").close();
 	});
 
 	document.querySelector(".jumpToolIcon").onclick = () => {
-		document.querySelector(".jumpTool").style.visibility = "visible";
-	};
-	document.querySelector(".jumpTool").onclick = () => {
-		document.querySelector(".jumpTool").style.visibility = "hidden";
+		document.querySelector(".jumpTool").showModal();
 	};
 
 	document.querySelector(".logIcon").onclick = () => {
-		document.querySelector(".log").style.visibility = "visible";
-	};
-	document.querySelector(".log").onclick = () => {
-		document.querySelector(".log").style.visibility = "hidden";
+		document.querySelector(".log").showModal();
 	};
 
 	document.querySelector(".avatar").onclick = () => {
-		document.querySelector(".user").style.visibility = "visible";
-	};
-	document.querySelector(".user").onclick = () => {
-		document.querySelector(".user").style.visibility = "hidden";
+		document.querySelector(".userModal").showModal();
 	};
 }
 
-window.onload = async function startBot() {
-	//when page is done loading, start bot
-
+window.onload = async () => {
 	veggieBot.pixelTimer(pixelCallback); //start pixel placement loop
-
-	ws = new WebSocket("wss://veggiebotserver.knobrega.com/live");
-	ws.addEventListener("open", (event) => {
-		ws.send(
-			JSON.stringify({
-				type: "connect",
-				user,
-			})
-		);
-	});
 };
 
 function refreshUI() {
@@ -296,7 +274,7 @@ function getCookie(cname) {
 			return c.substring(name.length, c.length);
 		}
 	}
-	return "";
+	return null;
 }
 /**
  * Sets a cookie value
@@ -321,11 +299,6 @@ function pixelCallback(results) {
 	window.setWait(results.waitMS);
 
 	veggieBot.webhook(results.string, user, version, botID, !results.successful);
-	// ws.send(JSON.stringify({
-	// 	type: "pixel",
-	// 	user,
-	// 	results,
-	// }))
 
 	const p = document.createElement("p");
 
