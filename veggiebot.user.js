@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      5.0.3
+// @version      5.1.0
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
