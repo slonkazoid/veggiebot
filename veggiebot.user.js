@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      5.2.0
+// @version      5.3.0
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
-// @updateURL    https://veggiebotserver.knobrega.com/veggiebot.user.js
-// @downloadURL  https://veggiebotserver.knobrega.com/veggiebot.user.js
+// @updateURL    https://veggiepixel.org/veggiebot.user.js
+// @downloadURL  https://veggiepixel.org/veggiebot.user.js
 // @grant        none
 // ==/UserScript==
 
@@ -17,8 +17,8 @@ setTimeout(() => {
 //base URL
 const baseURL =
 	getCookie("dev") === "true"
-		? "https://veggiebot-dev.knobrega.com"
-		: "https://veggiebotserver.knobrega.com";
+		? "https://dev.veggiepixel.org"
+		: "https://veggiepixel.org";
 window.baseURL = baseURL;
 
 //global values
@@ -29,9 +29,6 @@ setCookie("z", botID, 30); //save bot ID to cookie
 let user;
 
 (async () => {
-	// load the library
-	await loadScript(`${baseURL}/veggieBotLibrary.js`);
-
 	//check if user is authorized
 	const response = await fetch(baseURL + "/auth/user", {
 		credentials: "include",
@@ -52,6 +49,9 @@ let user;
 
 		alert("unexpected response recieved from veggiebotserver user endpoint");
 	}
+
+	// load the library
+	console.log(await loadScript(`${baseURL}/veggieBotLibrary.js`));
 
 	//then build UI
 	function buildUI() {
@@ -191,7 +191,7 @@ let user;
 	
 			<div class="sidebar">
 				<div class="uiTop">
-					<img src="https://veggiebotserver.knobrega.com/logo-primary.png">
+					<img src="${baseURL}/logo-primary.png">
 				</div>
 				<div class="uiStackTop">
 					<div class="card logIcon" style="cursor: pointer;">
