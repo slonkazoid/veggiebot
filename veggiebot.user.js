@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      5.3.0
+// @version      5.4.0
 // @author       Vegans
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
@@ -28,7 +28,7 @@ const version = GM_info.script.version;
 setCookie("z", botID, 30); //save bot ID to cookie
 let user;
 
-(async () => {
+window.onload = async () => {
 	//check if user is authorized
 	const response = await fetch(baseURL + "/auth/user", {
 		credentials: "include",
@@ -51,7 +51,7 @@ let user;
 	}
 
 	// load the library
-	console.log(await loadScript(`${baseURL}/veggieBotLibrary.js`));
+	await loadScript(`${baseURL}/veggieBotLibrary.js`);
 
 	//then build UI
 	function buildUI() {
@@ -65,157 +65,157 @@ let user;
 		div.classList.add("veggieBot");
 
 		div.innerHTML = /*html*/ `
-			
-			<link rel="preconnect" href="https://fonts.googleapis.com" />
-			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-			<link
-				href="https://fonts.googleapis.com/css2?family=Chivo+Mono&family=Lexend+Deca&family=Nunito&display=swap"
-				rel="stylesheet"
-			/>
-			<style>
-				.veggieBot {
-					font-family: "Nunito", sans-serif;
-					color: white;
-					font-size: 0.75rem;
-				}
-				.sidebar {
-					position: absolute;
-					height: 100%;
-					width: 86px;
-					overflow: scroll;
-	
-					display: flex;
-					flex-direction: column;
-	
-					background: #202123;
-				}
-				.uiTop {
-					background-color: ${getCookie("dev") === "true" ? "#ffe300" : "#0c41a0"};
-					color: ${getCookie("dev") === "true" ? "black" : "white"};
-					font-family: "Lexend Deca", sans-serif;
-					
-					padding: 15px;
-					border-bottom: 2px solid #3968bd;
-				}
-				.uiStackTop {
-					display: flex;
-					flex-flow: column;
-					gap: 15px;
-					padding: 15px;
-					height: 100%;
-				}
-				.card {
-					background: #2b2d32;
-					color:  white;
-					padding: 10px;
-					border-radius: 10px;
-					border: 2px solid #36383f;
-	
-					display: flex;
-					flex-flow: column;
-					gap: 10px;
-				}
-				.user {
-					background: #2b2d32;
-					color:  white;
-					padding: 15px;
-					border-top: 2px solid #36383f;
-					
-					display: flex;
-					flex-flow: row;
-					gap: 10px;
-				}
-				.logScroller {
-					background-color: black;
-					border-radius: 10px;
-					border: 2px solid #333;
-					overflow: scroll;
-					padding: 10px;
-					white-space: nowrap;
-					color: white;
-					font-family: monospace;
-				}
-				#gameWindow + div + div {
-					width: 100px;
-				}
-				.textInput {
-					background-color: #2b2d32;
-					color: white;
-					border-radius: 4px;
-					border: 2px solid #36383f;
-					min-width: 0;
-					padding: 3px 7px;
-				}
-				.navIcon {
-					font-size: 2rem;
-					display: block;
-				}
-				dialog {
-					background: none;
-				}
-				dialog::backdrop {
-					background-color: #000a;
-				}
-	
-			</style>
-	
-			<dialog class="jumpTool">
-				<div class="card">
-					<div style="display: flex; flex-direction: column; gap: 5px;">
-						<strong>Jump to location</strong>
-						<form id="jumpForm">
-							<div style="display: flex; flex-direction: column; gap: 8px;">
-								<input class="textInput jumpX" placeholder="x coord" required>
-								<input class="textInput jumpY" placeholder="y coord" required>
-								<input type="submit" value="Go" style="background-color: #0e4ec1; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-							</div>
-						</form>
-					</div>
-				</div>
-			</dialog>
-	
-			<dialog class="userModal">
-				<div class="card">
-					<img style="border-radius: 10px; width: 40px; height: 40px;" src="${
-						user.avatar
-							? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
-							: "https://cdn.discordapp.com/embed/avatars/0.png"
-					}">
-					<a href="${baseURL}/auth/logout">Log out</a>
-					<span class="appVersion">v${version} · #${botID}</span>
-				</div>
-			</dialog>
-	
-			<dialog class="log logScroller">
-			</dialog>
-	
-			<div class="sidebar">
-				<div class="uiTop">
-					<img src="${baseURL}/logo-primary.png">
-				</div>
-				<div class="uiStackTop">
-					<div class="card logIcon" style="cursor: pointer;">
-						<i class="fa-solid fa-list-ul navIcon"></i>
-					</div>
-					<div class="card jumpToolIcon" style="cursor: pointer;">
-						<i class="fa-solid fa-compass navIcon"></i>
-					</div>
-					<a href="${baseURL}">
-						<div class="card">
-							<i class="fa-solid fa-chart-column navIcon"></i>
+				
+				<link rel="preconnect" href="https://fonts.googleapis.com" />
+				<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+				<link
+					href="https://fonts.googleapis.com/css2?family=Chivo+Mono&family=Lexend+Deca&family=Nunito&display=swap"
+					rel="stylesheet"
+				/>
+				<style>
+					.veggieBot {
+						font-family: "Nunito", sans-serif;
+						color: white;
+						font-size: 0.75rem;
+					}
+					.sidebar {
+						position: absolute;
+						height: 100%;
+						width: 86px;
+						overflow: scroll;
+		
+						display: flex;
+						flex-direction: column;
+		
+						background: #202123;
+					}
+					.uiTop {
+						background-color: ${getCookie("dev") === "true" ? "#ffe300" : "#0c41a0"};
+						color: ${getCookie("dev") === "true" ? "black" : "white"};
+						font-family: "Lexend Deca", sans-serif;
+						
+						padding: 15px;
+						border-bottom: 2px solid #3968bd;
+					}
+					.uiStackTop {
+						display: flex;
+						flex-flow: column;
+						gap: 15px;
+						padding: 15px;
+						height: 100%;
+					}
+					.card {
+						background: #2b2d32;
+						color:  white;
+						padding: 10px;
+						border-radius: 10px;
+						border: 2px solid #36383f;
+		
+						display: flex;
+						flex-flow: column;
+						gap: 10px;
+					}
+					.user {
+						background: #2b2d32;
+						color:  white;
+						padding: 15px;
+						border-top: 2px solid #36383f;
+						
+						display: flex;
+						flex-flow: row;
+						gap: 10px;
+					}
+					.logScroller {
+						background-color: black;
+						border-radius: 10px;
+						border: 2px solid #333;
+						overflow: scroll;
+						padding: 10px;
+						white-space: nowrap;
+						color: white;
+						font-family: monospace;
+					}
+					#gameWindow + div + div {
+						width: 100px;
+					}
+					.textInput {
+						background-color: #2b2d32;
+						color: white;
+						border-radius: 4px;
+						border: 2px solid #36383f;
+						min-width: 0;
+						padding: 3px 7px;
+					}
+					.navIcon {
+						font-size: 2rem;
+						display: block;
+					}
+					dialog {
+						background: none;
+					}
+					dialog::backdrop {
+						background-color: #000a;
+					}
+		
+				</style>
+		
+				<dialog class="jumpTool">
+					<div class="card">
+						<div style="display: flex; flex-direction: column; gap: 5px;">
+							<strong>Jump to location</strong>
+							<form id="jumpForm">
+								<div style="display: flex; flex-direction: column; gap: 8px;">
+									<input class="textInput jumpX" placeholder="x coord" required>
+									<input class="textInput jumpY" placeholder="y coord" required>
+									<input type="submit" value="Go" style="background-color: #0e4ec1; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+								</div>
+							</form>
 						</div>
-					</a>
+					</div>
+				</dialog>
+		
+				<dialog class="userModal">
+					<div class="card">
+						<img style="border-radius: 10px; width: 40px; height: 40px;" src="${
+							user.avatar
+								? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
+								: "https://cdn.discordapp.com/embed/avatars/0.png"
+						}">
+						<a href="${baseURL}/auth/logout">Log out</a>
+						<span class="appVersion">v${version} · #${botID}</span>
+					</div>
+				</dialog>
+		
+				<dialog class="log logScroller">
+				</dialog>
+		
+				<div class="sidebar">
+					<div class="uiTop">
+						<img src="${baseURL}/logo-primary.png">
+					</div>
+					<div class="uiStackTop">
+						<div class="card logIcon" style="cursor: pointer;">
+							<i class="fa-solid fa-list-ul navIcon"></i>
+						</div>
+						<div class="card jumpToolIcon" style="cursor: pointer;">
+							<i class="fa-solid fa-compass navIcon"></i>
+						</div>
+						<a href="${baseURL}">
+							<div class="card">
+								<i class="fa-solid fa-chart-column navIcon"></i>
+							</div>
+						</a>
+					</div>
+					<span style="transform: rotate(270deg); font-family: 'Lexend Deca'; font-size: 1.7rem; margin-bottom: 50px; white-space: nowrap;"><span class="pixelsPlaced">0</span> pixels placed</span>
+					<div class="user">
+						<img class="avatar" style="border-radius: 10px" src="${
+							user.avatar
+								? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
+								: "https://cdn.discordapp.com/embed/avatars/0.png"
+						}">
+					</div>
 				</div>
-				<span style="transform: rotate(270deg); font-family: 'Lexend Deca'; font-size: 1.7rem; margin-bottom: 50px; white-space: nowrap;"><span class="pixelsPlaced">0</span> pixels placed</span>
-				<div class="user">
-					<img class="avatar" style="border-radius: 10px" src="${
-						user.avatar
-							? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
-							: "https://cdn.discordapp.com/embed/avatars/0.png"
-					}">
-				</div>
-			</div>
-		`;
+			`;
 		document.body.appendChild(div);
 
 		//jump
@@ -244,10 +244,7 @@ let user;
 		};
 	}
 	buildUI();
-})();
 
-window.onload = async () => {
-	console.log(typeof veggieBot);
 	veggieBot.pixelTimer(pixelCallback); //start pixel placement loop
 };
 
