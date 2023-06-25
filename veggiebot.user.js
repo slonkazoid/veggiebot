@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      5.4.0
-// @author       Vegans
+// @version      5.4.1
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
-// @updateURL    https://veggiepixel.org/veggiebot.user.js
-// @downloadURL  https://veggiepixel.org/veggiebot.user.js
+// @updateURL    https://github.com/Vegan-PixelCanvas/veggiebot/raw/main/veggiebot.user.js
+// @downloadURL  https://github.com/Vegan-PixelCanvas/veggiebot/raw/main/veggiebot.user.js
 // @grant        none
 // ==/UserScript==
 
@@ -34,19 +33,13 @@ window.onload = async () => {
 		credentials: "include",
 	});
 
-	await a();
-	async function a() {
-		if (response.status === 401) {
-			//user is not logged in
-			window.location.replace(baseURL + "/auth/login");
-			return;
-		}
-		if (response.status === 200) {
-			//user is logged in and authorized
-			user = await response.json();
-			return;
-		}
-
+	if (response.status === 401) {
+		//user is not logged in
+		window.location.replace(baseURL + "/auth/login");
+	} else if (response.status === 200) {
+		//user is logged in and authorized
+		user = await response.json();
+	} else {
 		alert("unexpected response recieved from veggiebotserver user endpoint");
 	}
 
@@ -55,11 +48,8 @@ window.onload = async () => {
 
 	//then build UI
 	function buildUI() {
-		//load fontawesome
-		const iconScript = document.createElement("script");
-		iconScript.src = "https://kit.fontawesome.com/5f09e108f6.js";
-		iconScript.crossOrigin = "anonymous";
-		document.body.appendChild(iconScript);
+		//load icons
+		loadScript("https://kit.fontawesome.com/5f09e108f6.js");
 
 		const div = document.createElement("div");
 		div.classList.add("veggieBot");
@@ -90,12 +80,12 @@ window.onload = async () => {
 						background: #202123;
 					}
 					.uiTop {
-						background-color: ${getCookie("dev") === "true" ? "#ffe300" : "#0c41a0"};
+						background-color: ${getCookie("dev") === "true" ? "#ffe300" : "#0031c2"};
 						color: ${getCookie("dev") === "true" ? "black" : "white"};
 						font-family: "Lexend Deca", sans-serif;
 						
 						padding: 15px;
-						border-bottom: 2px solid #3968bd;
+						border-bottom: 2px solid #4a78fc;
 					}
 					.uiStackTop {
 						display: flex;
@@ -127,13 +117,13 @@ window.onload = async () => {
 					}
 					.logScroller {
 						background-color: black;
-						border-radius: 10px;
-						border: 2px solid #333;
+						border-radius: 4px;
 						overflow: scroll;
 						padding: 10px;
 						white-space: nowrap;
 						color: white;
 						font-family: monospace;
+						height: 50vh;
 					}
 					#gameWindow + div + div {
 						width: 100px;
@@ -158,6 +148,33 @@ window.onload = async () => {
 					}
 		
 				</style>
+
+				<div class="sidebar">
+					<div class="uiTop">
+						<img src="${baseURL}/logo-primary.png">
+					</div>
+					<div class="uiStackTop">
+						<div class="card logIcon" style="cursor: pointer;">
+							<i class="fa-solid fa-list-ul navIcon"></i>
+						</div>
+						<div class="card jumpToolIcon" style="cursor: pointer;">
+							<i class="fa-solid fa-compass navIcon"></i>
+						</div>
+						<a href="${baseURL}" target="_blank" rel="noopener noreferrer">
+							<div class="card">
+								<i class="fa-solid fa-chart-column navIcon"></i>
+							</div>
+						</a>
+					</div>
+					<span style="transform: rotate(270deg); font-family: 'Lexend Deca'; font-size: 1.7rem; margin-bottom: 50px; white-space: nowrap;"><span class="pixelsPlaced">0</span> pixels placed</span>
+					<div class="user">
+						<img class="avatar" style="border-radius: 10px; cursor: pointer;" src="${
+							user.avatar
+								? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
+								: "https://cdn.discordapp.com/embed/avatars/0.png"
+						}">
+					</div>
+				</div>
 		
 				<dialog class="jumpTool">
 					<div class="card">
@@ -168,6 +185,7 @@ window.onload = async () => {
 									<input class="textInput jumpX" placeholder="x coord" required>
 									<input class="textInput jumpY" placeholder="y coord" required>
 									<input type="submit" value="Go" style="background-color: #0e4ec1; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+									<input type="button" value="Cancel" onclick="document.querySelector('.jumpTool').close()" style="background-color: #151515; border-radius: 4px; cursor: pointer; padding: 5px 10px;">
 								</div>
 							</form>
 						</div>
@@ -186,35 +204,14 @@ window.onload = async () => {
 					</div>
 				</dialog>
 		
-				<dialog class="log logScroller">
+				<dialog class="log">
+					<div class="card">
+						<div class="logScroller">
+						</div>
+						<button onclick="document.querySelector('.log').close()" style="background-color: #151515; border-radius: 4px; cursor: pointer; padding: 5px 10px;">Close</button>
+					</div>
+					
 				</dialog>
-		
-				<div class="sidebar">
-					<div class="uiTop">
-						<img src="${baseURL}/logo-primary.png">
-					</div>
-					<div class="uiStackTop">
-						<div class="card logIcon" style="cursor: pointer;">
-							<i class="fa-solid fa-list-ul navIcon"></i>
-						</div>
-						<div class="card jumpToolIcon" style="cursor: pointer;">
-							<i class="fa-solid fa-compass navIcon"></i>
-						</div>
-						<a href="${baseURL}">
-							<div class="card">
-								<i class="fa-solid fa-chart-column navIcon"></i>
-							</div>
-						</a>
-					</div>
-					<span style="transform: rotate(270deg); font-family: 'Lexend Deca'; font-size: 1.7rem; margin-bottom: 50px; white-space: nowrap;"><span class="pixelsPlaced">0</span> pixels placed</span>
-					<div class="user">
-						<img class="avatar" style="border-radius: 10px" src="${
-							user.avatar
-								? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
-								: "https://cdn.discordapp.com/embed/avatars/0.png"
-						}">
-					</div>
-				</div>
 			`;
 		document.body.appendChild(div);
 
@@ -289,9 +286,10 @@ function setCookie(cname, cvalue, exdays) {
 
 function pixelCallback(results) {
 	//runs after each pixel placement attempt
+
 	if (results.successful === true) {
 		const oldCount = parseInt(getCookie("pixelCounter") || 0);
-		setCookie("pixelCounter", oldCount + 1, 3); //update cookie
+		setCookie("pixelCounter", oldCount + 1, 3);
 	}
 
 	window.setWait(results.waitMS);
