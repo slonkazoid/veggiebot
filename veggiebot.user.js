@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      5.4.1
+// @version      5.4.2
 // @match        https://pixelcanvas.io/*
 // @icon         https://pixelcanvas.io/favicon.ico
 // @updateURL    https://github.com/Vegan-PixelCanvas/veggiebot/raw/main/veggiebot.user.js
@@ -72,8 +72,7 @@ window.onload = async () => {
 						position: absolute;
 						height: 100%;
 						width: 86px;
-						overflow: scroll;
-		
+
 						display: flex;
 						flex-direction: column;
 		
