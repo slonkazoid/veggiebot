@@ -172,9 +172,7 @@ if (window.location.host === "pixelcanvas.io") {
 					<span style="transform: rotate(270deg); font-family: 'Lexend Deca'; font-size: 1.7rem; margin-bottom: 50px; white-space: nowrap;"><span class="pixelsPlaced">0</span> pixels placed</span>
 					<div class="user">
 						<img class="avatar" style="border-radius: 10px; cursor: pointer;" src="${
-							user.avatar
-								? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
-								: "https://cdn.discordapp.com/embed/avatars/0.png"
+							user.avatarURL
 						}">
 					</div>
 				</div>
@@ -198,9 +196,7 @@ if (window.location.host === "pixelcanvas.io") {
 				<dialog class="userModal">
 					<div class="card">
 						<img style="border-radius: 10px; width: 40px; height: 40px;" src="${
-							user.avatar
-								? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=64`
-								: "https://cdn.discordapp.com/embed/avatars/0.png"
+							user.avatarURL
 						}">
 						<a href="${baseURL}/auth/logout">Log out</a>
 						<span class="appVersion">v${version} · #${botID}</span>
