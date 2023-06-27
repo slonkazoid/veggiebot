@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         VeggieBot
-// @version      5.4.2
+// @version      5.4.3
 // @include      https://pixelcanvas.io/*
 // @include	     https://veggiepixel.org*
 // @include		 https://dev.veggiepixel.org*
