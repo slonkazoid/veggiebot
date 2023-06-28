@@ -37,7 +37,7 @@ if (window.location.host === "pixelcanvas.io") {
 			credentials: "include",
 		});
 
-		if (response.status === 502) {
+		if (response.status >= 500 && response.status < 600 /*what*/) {
 			baseURL = "https://pixel.afy.duckdns.org";
 			window.baseURL = baseURL;
 			console.warn("Falling back to", baseURL);
