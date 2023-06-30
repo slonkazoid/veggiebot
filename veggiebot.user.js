@@ -43,13 +43,19 @@ if (window.location.host === "pixelcanvas.io") {
 			console.error(`Request to veggiebotserver user endpoint (${baseURL}) failed:`, err);
 		}
 
+		// Fallback
 		if (!response || response.status >= 500 && response.status < 600 /*what*/) {
 			baseURL = fallbackURL;
 			window.baseURL = baseURL;
 			console.warn("Falling back to", baseURL);
-			response = await fetch(baseURL + "/auth/user", {
-				credentials: "include",
-			});
+			try {
+				response = await fetch(baseURL + "/auth/user", {
+					credentials: "include",
+				});
+			} catch (err) {
+				console.error(`Request to veggiebotserver user endpoint (${baseURL}) failed:`, err);
+				throw err; // Terminate if even fallback server can't be reached
+			}
 		}
 		
 		if (response.status === 401) {
