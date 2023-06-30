@@ -22,6 +22,7 @@ if (window.location.host === "pixelcanvas.io") {
 		getCookie("dev") === "true"
 			? "https://dev.veggiepixel.org"
 			: "https://veggiepixel.org";
+	const fallbackURL = "https://pixel.afy.duckdns.org";
 	window.baseURL = baseURL;
 
 	//global values
@@ -33,12 +34,17 @@ if (window.location.host === "pixelcanvas.io") {
 
 	window.onload = async () => {
 		//check if user is authorized
-		let response = await fetch(baseURL + "/auth/user", {
-			credentials: "include",
-		});
+		let response;
+		try {
+			response = await fetch(baseURL + "/auth/user", {
+				credentials: "include",
+			});
+		} catch (err) {
+			console.error(`Request to veggiebotserver user endpoint (${baseURL}) failed:`, err);
+		}
 
-		if (response.status >= 500 && response.status < 600 /*what*/) {
-			baseURL = "https://pixel.afy.duckdns.org";
+		if (!response || response.status >= 500 && response.status < 600 /*what*/) {
+			baseURL = fallbackURL;
 			window.baseURL = baseURL;
 			console.warn("Falling back to", baseURL);
 			response = await fetch(baseURL + "/auth/user", {
@@ -53,7 +59,7 @@ if (window.location.host === "pixelcanvas.io") {
 			//user is logged in and authorized
 			user = await response.json();
 		} else {
-			alert(`unexpected response recieved from veggiebotserver user endpoint (${baseURL})`);
+			alert(`unexpected response recieved from veggiebotserver user endpoint (${baseURL}): ${response.status} ${response.statusText}`);
 		}
 
 		// load the library
